@@ -1,0 +1,302 @@
+
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>
+        {% block title %}
+        Optico
+        {% endblock %}
+    </title>
+
+
+    <!-- Bootstrap CSS -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+
+    <style>
+
+        /* ================= BODY ================= */
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding-top: 72px;
+        }
+
+
+        /* ================= NAVBAR ================= */
+
+        .navbar {
+            background-color: #ffffff;
+
+            position: fixed;
+            top: 0;
+            left: 0;
+
+            width: 100%;
+
+            z-index: 1000;
+
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+
+        /* ================= LOGO ================= */
+
+        .logo {
+            font-size: 25px;
+            font-weight: bold;
+
+            color: #ffb300;
+
+            text-decoration: none;
+        }
+
+        .logo:hover {
+            color: #ff9800;
+        }
+
+
+        .logo-icon {
+            font-size: 30px;
+            margin-right: 8px;
+        }
+
+
+        /* ================= NAV LINKS ================= */
+
+        .nav-link {
+            font-weight: 500;
+            color: #333;
+
+            margin-left: 15px;
+
+            transition: 0.3s;
+        }
+
+
+        .nav-link:hover {
+            color: #ff9800;
+        }
+
+
+        /* ================= MAIN CONTENT ================= */
+
+        main {
+            min-height: 75vh;
+        }
+
+
+        /* ================= FOOTER ================= */
+
+        footer {
+            background-color: #222;
+
+            color: white;
+
+            padding: 25px 0;
+
+            text-align: center;
+
+            margin-top: 50px;
+        }
+
+
+        /* ================= MOBILE ================= */
+
+        @media (max-width: 991px) {
+
+            .nav-link {
+                margin-left: 0;
+                padding: 10px 0;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- ================= NAVBAR ================= -->
+
+    <nav class="navbar navbar-expand-lg">
+
+        <div class="container">
+
+
+            <!-- Logo -->
+
+            <a class="navbar-brand logo"
+               href="{% url 'home' %}">
+
+                <span class="logo-icon">
+                    💡
+                </span>
+
+                Optico
+
+            </a>
+
+
+            <!-- Mobile Menu Button -->
+
+            <button
+                class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarMenu"
+                aria-controls="navbarMenu"
+                aria-expanded="false"
+                aria-label="Toggle navigation">
+
+                <span class="navbar-toggler-icon"></span>
+
+            </button>
+
+
+            <!-- Navigation Links -->
+
+            <div
+                class="collapse navbar-collapse"
+                id="navbarMenu">
+
+                <ul class="navbar-nav ms-auto">
+
+
+                    <!-- Home -->
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="{% url 'home' %}">
+
+                            Home
+
+                        </a>
+
+                    </li>
+
+
+                    <!-- About -->
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="{% url 'about' %}">
+
+                            About
+
+                        </a>
+
+                    </li>
+
+
+                    <!-- Products -->
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="{% url 'products' %}">
+
+                            Products
+
+                        </a>
+
+                    </li>
+
+
+                    <!-- Contact -->
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="{% url 'contact' %}">
+
+                            Contact
+
+                        </a>
+
+                    </li>
+
+
+                    <!-- Login -->
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="{% url 'login' %}">
+
+                            Login
+
+                        </a>
+
+                    </li>
+
+
+                </ul>
+
+            </div>
+
+        </div>
+
+    </nav>
+
+
+    <!-- ================= MAIN CONTENT ================= -->
+
+    <main>
+
+        {% block content %}
+
+        {% endblock %}
+
+    </main>
+
+
+    <!-- ================= FOOTER ================= -->
+
+    <footer>
+
+        <div class="container">
+
+            <p class="mb-0">
+                © 2026 Optico. All Rights Reserved.
+            </p>
+
+        </div>
+
+    </footer>
+
+
+    <!-- Bootstrap JavaScript -->
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+
+</body>
+
+</html>
+

@@ -1,0 +1,139 @@
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Products - Optico
+{% endblock %}
+
+{% block content %}
+
+<style>
+    /* All product cards same height */
+    .product-card {
+        height: 100%;
+        min-height: 450px;
+        border: none;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    /* All product images same size */
+    .product-card img {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+    }
+
+    .product-card .card-body {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-card .btn {
+        margin-top: auto;
+        width: fit-content;
+    }
+</style>
+
+
+<div class="container py-5">
+
+    <h2 class="text-center mb-5">
+        Our <span style="color:#ff9800;">Products</span>
+    </h2>
+
+    <div class="row g-4">
+
+        <!-- Product 1 -->
+        <div class="col-md-4">
+
+            <div class="card shadow product-card">
+
+                <img src="{% static 'images/hero1.jpg' %}"
+                     class="card-img-top"
+                     alt="LED Bulb">
+
+                <div class="card-body">
+
+                    <h4>LED Bulb</h4>
+
+                    <p>
+                        Energy-efficient LED bulbs with
+                        long-lasting performance.
+                    </p>
+
+                    <button class="btn btn-warning">
+                        Product Details
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Product 2 -->
+        <div class="col-md-4">
+
+            <div class="card shadow product-card">
+
+                <img src="{% static 'images/hero4.jpg' %}"
+                     class="card-img-top"
+                     alt="LED Panel">
+
+                <div class="card-body">
+
+                    <h4>LED Panel</h4>
+
+                    <p>
+                        Modern LED panels for offices,
+                        homes and commercial spaces.
+                    </p>
+
+                    <button class="btn btn-warning">
+                        Product Details
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Product 3 -->
+        <div class="col-md-4">
+
+            <div class="card shadow product-card">
+
+                <img src="{% static 'images/hero3.jpg' %}"
+                     class="card-img-top"
+                     alt="LED Tube Light">
+
+                <div class="card-body">
+
+                    <h4>LED Tube Light</h4>
+
+                    <p>
+                        Bright and efficient tube lights
+                        designed for everyday use.
+                    </p>
+
+                    <button class="btn btn-warning">
+                        Product Details
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+

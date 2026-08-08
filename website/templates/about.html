@@ -1,0 +1,172 @@
+
+{% extends 'base.html' %}
+
+{% block title %}
+About - Optico
+{% endblock %}
+
+{% block content %}
+
+<!-- ================= ABOUT HERO ================= -->
+
+<div class="row align-items-center py-5">
+
+    <!-- Left Side Image -->
+    <div class="col-md-6 mb-4 mb-md-0">
+
+        <img
+            src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=900&q=80"
+            class="img-fluid rounded-4 shadow"
+            alt="About Optico"
+            style="width:100%; height:420px; object-fit:cover;">
+
+    </div>
+
+
+    <!-- Right Side Content -->
+    <div class="col-md-6">
+
+        <p class="text-warning fw-bold mb-2">
+            ABOUT OPTICO
+        </p>
+
+        <h1 class="fw-bold mb-4">
+            Lighting The Way To A
+            <span style="color:#ff9800;">
+                Brighter Future
+            </span>
+        </h1>
+
+        <p class="text-muted">
+            Optico is dedicated to providing innovative,
+            energy-efficient and high-quality LED lighting
+            solutions for homes, offices and businesses.
+        </p>
+
+        <p class="text-muted">
+            We believe that good lighting can transform
+            any environment. That's why we focus on creating
+            reliable products that combine modern design,
+            excellent performance and energy savings.
+        </p>
+
+        <a href="{% url 'products' %}"
+           class="btn btn-warning px-4 py-2 mt-2">
+            Explore Our Products
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- ================= OUR FEATURES ================= -->
+
+<div class="text-center py-5">
+
+    <p class="text-warning fw-bold mb-2">
+        WHY CHOOSE US
+    </p>
+
+    <h2 class="fw-bold mb-5">
+        What Makes <span style="color:#ff9800;">Optico</span> Different?
+    </h2>
+
+
+    <div class="row g-4">
+
+        <!-- Feature 1 -->
+        <div class="col-md-4">
+
+            <div class="card border-0 shadow-sm h-100 p-4">
+
+                <div class="mb-3" style="font-size:45px;">
+                    💡
+                </div>
+
+                <h4 class="fw-bold">
+                    Energy Efficient
+                </h4>
+
+                <p class="text-muted">
+                    Our LED products consume less energy
+                    while providing bright and reliable lighting.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- Feature 2 -->
+        <div class="col-md-4">
+
+            <div class="card border-0 shadow-sm h-100 p-4">
+
+                <div class="mb-3" style="font-size:45px;">
+                    ⭐
+                </div>
+
+                <h4 class="fw-bold">
+                    Premium Quality
+                </h4>
+
+                <p class="text-muted">
+                    We provide high-quality lighting products
+                    designed for long-lasting performance.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- Feature 3 -->
+        <div class="col-md-4">
+
+            <div class="card border-0 shadow-sm h-100 p-4">
+
+                <div class="mb-3" style="font-size:45px;">
+                    🌱
+                </div>
+
+                <h4 class="fw-bold">
+                    Eco Friendly
+                </h4>
+
+                <p class="text-muted">
+                    Our energy-saving solutions help reduce
+                    electricity consumption and protect the environment.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================= OUR MISSION ================= -->
+
+<div class="row align-items-center py-5">
+
+    <div class="col-md-8 mx-auto text-center">
+
+        <h2 class="fw-bold">
+            Our <span style="color:#ff9800;">Mission</span>
+        </h2>
+
+        <p class="lead text-muted mt-3">
+            Our mission is to make high-quality, energy-efficient
+            lighting accessible to everyone while helping create
+            brighter and more sustainable spaces.
+        </p>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
