@@ -1,4 +1,4 @@
-
+```html
 {% extends 'base.html' %}
 
 {% block title %}
@@ -15,7 +15,31 @@ Contact - Optico
 
     <div class="row g-4">
 
-        <!-- Contact Form -->
+        <!-- Google Map - LEFT SIDE -->
+        <div class="col-md-6">
+
+            <div class="card shadow h-100">
+
+                <div class="card-body p-0">
+
+                    <iframe
+                        src="https://www.google.com/maps?q=Optico+Solutions+Pvt+Ltd,+B-38A,+IT+Park,+Badwai,+Bhopal,+Madhya+Pradesh&output=embed"
+                        width="100%"
+                        height="100%"
+                        style="border:0; min-height:450px;"
+                        allowfullscreen=""
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Contact Form - RIGHT SIDE -->
         <div class="col-md-6">
 
             <div class="card shadow p-4 h-100">
@@ -111,33 +135,9 @@ Contact - Optico
 
         </div>
 
-
-        <!-- Google Map -->
-        <div class="col-md-6">
-
-            <div class="card shadow h-100">
-
-                <div class="card-body p-0">
-
-                    <iframe
-                        src="https://www.google.com/maps?q=Optico+Solutions+Pvt+Ltd,+B-38A,+IT+Park,+Badwai,+Bhopal,+Madhya+Pradesh&output=embed"
-                        width="100%"
-                        height="100%"
-                        style="border:0; min-height:450px;"
-                        allowfullscreen=""
-                        loading="lazy"
-                        referrerpolicy="no-referrer-when-downgrade">
-                    </iframe>
-
-                </div>
-
-            </div>
-
-        </div>
-
     </div>
 
 </div>
 
 {% endblock %}
-
+```
