@@ -45,9 +45,10 @@ def contact(request):
         phone = request.POST.get('phone')
         message = request.POST.get('message')
 
-        # -------------------------
-        # Save Contact Details
-        # -------------------------
+        # =========================
+        # SAVE CONTACT DETAILS
+        # =========================
+
         Contact.objects.create(
             name=name,
             email=email,
@@ -55,15 +56,22 @@ def contact(request):
             message=message
         )
 
-        # -------------------------
-        # Send Email using Resend
-        # -------------------------
+        # =========================
+        # RESEND EMAIL
+        # =========================
+
         resend.api_key = settings.RESEND_API_KEY
 
         resend.Emails.send({
             "from": "Optico <onboarding@resend.dev>",
-            "to": [email],
-            "subject": "Contact Form Submission Successful - Optico",
+
+            # IMPORTANT:
+            # Without custom domain, Resend testing
+            # allows your own verified email only.
+            "to": ["ra362176@gmail.com"],
+
+            "subject": "New Contact Form Submission - Optico",
+
             "html": f"""
                 <div style="
                     font-family: Arial, sans-serif;
@@ -74,62 +82,64 @@ def contact(request):
                     border-radius: 10px;
                 ">
 
-                    <h2 style="color: #ff9800;">
-                        Hello {name},
+                    <h2 style="color:#ff9800;">
+                        New Contact Form Submission
                     </h2>
 
                     <p>
-                        Thank you for contacting
-                        <strong>Optico</strong>.
-                    </p>
-
-                    <p>
-                        Your message has been successfully received.
-                        Our team will review your message and contact
-                        you soon.
+                        Someone has submitted the contact
+                        form on your Optico website.
                     </p>
 
                     <hr>
 
-                    <h3>Your Submitted Details</h3>
+                    <h3>User Details</h3>
 
                     <p>
-                        <strong>Name:</strong> {name}
+                        <strong>Name:</strong>
+                        {name}
                     </p>
 
                     <p>
-                        <strong>Email:</strong> {email}
+                        <strong>Email:</strong>
+                        {email}
                     </p>
 
                     <p>
-                        <strong>Phone:</strong> {phone}
+                        <strong>Phone:</strong>
+                        {phone}
                     </p>
 
                     <p>
                         <strong>Message:</strong>
                     </p>
 
-                    <p>
+                    <div style="
+                        background:#f5f5f5;
+                        padding:15px;
+                        border-radius:5px;
+                    ">
                         {message}
-                    </p>
+                    </div>
 
                     <hr>
 
                     <p>
-                        Thank you,<br>
-                        <strong>Optico Team</strong>
+                        This message was submitted
+                        through the Optico website.
                     </p>
 
                 </div>
             """
         })
 
-        # -------------------------
-        # Success Message
-        # -------------------------
+        # =========================
+        # SUCCESS MESSAGE
+        # =========================
+
         return render(request, 'contact.html', {
             'success':
-            'Message sent successfully! A confirmation email has been sent to your email address.'
+            'Message sent successfully! Our team will contact you soon.'
         })
 
     return render(request, 'contact.html')
@@ -161,10 +171,8 @@ def login_view(request):
 
             return redirect('/admin/')
 
-        else:
-
-            return render(request, 'login.html', {
-                'error': 'Invalid username or password.'
-            })
+        return render(request, 'login.html', {
+            'error': 'Invalid username or password.'
+        })
 
     return render(request, 'login.html')
