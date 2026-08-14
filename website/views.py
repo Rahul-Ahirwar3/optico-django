@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
-from django.core.mail import send_mail
 from django.conf import settings
+
+import resend
 
 from .models import Contact, Product
 
@@ -45,7 +46,7 @@ def contact(request):
         message = request.POST.get('message')
 
         # -------------------------
-        # Save Contact in Database
+        # Save Contact Details
         # -------------------------
         Contact.objects.create(
             name=name,
@@ -55,49 +56,80 @@ def contact(request):
         )
 
         # -------------------------
-        # Send Confirmation Email
+        # Send Email using Resend
         # -------------------------
-        send_mail(
-            subject='Contact Form Submission Successful - Optico',
+        resend.api_key = settings.RESEND_API_KEY
 
-            message=f"""
-Hello {name},
+        resend.Emails.send({
+            "from": "Optico <onboarding@resend.dev>",
+            "to": [email],
+            "subject": "Contact Form Submission Successful - Optico",
+            "html": f"""
+                <div style="
+                    font-family: Arial, sans-serif;
+                    max-width: 600px;
+                    margin: auto;
+                    padding: 25px;
+                    border: 1px solid #ddd;
+                    border-radius: 10px;
+                ">
 
-Thank you for contacting Optico.
+                    <h2 style="color: #ff9800;">
+                        Hello {name},
+                    </h2>
 
-Your message has been successfully received.
+                    <p>
+                        Thank you for contacting
+                        <strong>Optico</strong>.
+                    </p>
 
-Our team will review your message and contact you soon.
+                    <p>
+                        Your message has been successfully received.
+                        Our team will review your message and contact
+                        you soon.
+                    </p>
 
---------------------------------
-Your Submitted Details
---------------------------------
+                    <hr>
 
-Name: {name}
-Email: {email}
-Phone: {phone}
+                    <h3>Your Submitted Details</h3>
 
-Message:
-{message}
+                    <p>
+                        <strong>Name:</strong> {name}
+                    </p>
 
---------------------------------
+                    <p>
+                        <strong>Email:</strong> {email}
+                    </p>
 
-Thank you,
-Optico Team
-""",
+                    <p>
+                        <strong>Phone:</strong> {phone}
+                    </p>
 
-            from_email=settings.DEFAULT_FROM_EMAIL,
+                    <p>
+                        <strong>Message:</strong>
+                    </p>
 
-            recipient_list=[email],
+                    <p>
+                        {message}
+                    </p>
 
-            fail_silently=False,
-        )
+                    <hr>
+
+                    <p>
+                        Thank you,<br>
+                        <strong>Optico Team</strong>
+                    </p>
+
+                </div>
+            """
+        })
 
         # -------------------------
         # Success Message
         # -------------------------
         return render(request, 'contact.html', {
-            'success': 'Message sent successfully! A confirmation email has been sent to your email address.'
+            'success':
+            'Message sent successfully! A confirmation email has been sent to your email address.'
         })
 
     return render(request, 'contact.html')
@@ -125,10 +157,8 @@ def login_view(request):
 
         if user is not None and user.is_staff:
 
-            # Create login session
             login(request, user)
 
-            # Open Django Admin
             return redirect('/admin/')
 
         else:

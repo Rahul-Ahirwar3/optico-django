@@ -214,41 +214,11 @@ DEFAULT_FILE_STORAGE = (
 
 
 # ==================================================
-# EMAIL CONFIGURATION
+# RESEND EMAIL CONFIGURATION
 # ==================================================
 
-MAILERS = {
-
-    'default': {
-
-        'BACKEND':
-        'django.core.mail.backends.smtp.EmailBackend',
-
-        'OPTIONS': {
-
-            'host': 'smtp.gmail.com',
-
-            'port': 587,
-
-            'username': os.environ.get(
-                'EMAIL_HOST_USER'
-            ),
-
-            'password': os.environ.get(
-                'EMAIL_HOST_PASSWORD'
-            ),
-
-            'use_tls': True,
-
-            'timeout': 10,
-        },
-    },
-}
-
-
-# Email sender
-DEFAULT_FROM_EMAIL = os.environ.get(
-    'EMAIL_HOST_USER'
+RESEND_API_KEY = os.environ.get(
+    'RESEND_API_KEY'
 )
 
 
