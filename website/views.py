@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.conf import settings
+from django.db import transaction
 
 import resend
 
-from .models import Contact, Product
+from .models import Contact, Product, Issue, Payment
 
 
 # =========================
@@ -64,12 +65,7 @@ def contact(request):
 
         resend.Emails.send({
             "from": "Optico <onboarding@resend.dev>",
-
-            # IMPORTANT:
-            # Without custom domain, Resend testing
-            # allows your own verified email only.
             "to": ["ra362176@gmail.com"],
-
             "subject": "New Contact Form Submission - Optico",
 
             "html": f"""
@@ -133,10 +129,6 @@ def contact(request):
             """
         })
 
-        # =========================
-        # SUCCESS MESSAGE
-        # =========================
-
         return render(request, 'contact.html', {
             'success':
             'Message sent successfully! Our team will contact you soon.'
@@ -150,7 +142,6 @@ def contact(request):
 # =========================
 def login_view(request):
 
-    # Admin already logged in
     if request.user.is_authenticated and request.user.is_staff:
         return redirect('/admin/')
 
@@ -176,3 +167,152 @@ def login_view(request):
         })
 
     return render(request, 'login.html')
+
+
+# ==================================================
+# BULB ISSUE PAGE
+# ==================================================
+
+def issue_bulb(request):
+
+    products = Product.objects.all().order_by('name')
+
+    if request.method == "POST":
+
+        product_id = request.POST.get('product')
+        customer_name = request.POST.get('customer_name')
+        quantity = request.POST.get('quantity')
+        issue_date = request.POST.get('issue_date')
+        rate = request.POST.get('rate')
+        paid_amount = request.POST.get('paid_amount')
+
+        # =========================
+        # BASIC VALIDATION
+        # =========================
+
+        if not product_id:
+            return render(request, 'issue.html', {
+                'products': products,
+                'error': 'Please select a bulb.'
+            })
+
+        if not customer_name:
+            return render(request, 'issue.html', {
+                'products': products,
+                'error': 'Please enter customer name.'
+            })
+
+        try:
+            quantity = int(quantity)
+            rate = float(rate)
+            paid_amount = float(paid_amount)
+
+        except (TypeError, ValueError):
+
+            return render(request, 'issue.html', {
+                'products': products,
+                'error': 'Please enter valid quantity, rate and payment.'
+            })
+
+        if quantity <= 0:
+
+            return render(request, 'issue.html', {
+                'products': products,
+                'error': 'Quantity must be greater than 0.'
+            })
+
+        if rate < 0 or paid_amount < 0:
+
+            return render(request, 'issue.html', {
+                'products': products,
+                'error': 'Rate and payment cannot be negative.'
+            })
+
+        # =========================
+        # GET PRODUCT
+        # =========================
+
+        try:
+            product = Product.objects.get(
+                id=product_id
+            )
+
+        except Product.DoesNotExist:
+
+            return render(request, 'issue.html', {
+                'products': products,
+                'error': 'Product not found.'
+            })
+
+        # =========================
+        # CHECK STOCK
+        # =========================
+
+        if quantity > product.stock_quantity:
+
+            return render(request, 'issue.html', {
+                'products': products,
+                'error': (
+                    f'Not enough stock. '
+                    f'Available stock: {product.stock_quantity}'
+                )
+            })
+
+        # =========================
+        # CHECK PAYMENT
+        # =========================
+
+        total_amount = quantity * rate
+
+        if paid_amount > total_amount:
+
+            return render(request, 'issue.html', {
+                'products': products,
+                'error': (
+                    'Paid amount cannot be greater '
+                    'than total amount.'
+                )
+            })
+
+        # =========================
+        # SAVE ISSUE + REDUCE STOCK
+        # =========================
+
+        with transaction.atomic():
+
+            Issue.objects.create(
+                product=product,
+                customer_name=customer_name,
+                quantity=quantity,
+                issue_date=issue_date,
+                rate=rate,
+                total_amount=total_amount,
+                paid_amount=paid_amount,
+                due_amount=total_amount - paid_amount
+            )
+
+            # Reduce stock
+            product.stock_quantity -= quantity
+            product.save(
+                update_fields=['stock_quantity']
+            )
+
+        # =========================
+        # SUCCESS
+        # =========================
+
+        return redirect('issue_bulb')
+
+    # =========================
+    # AVAILABLE STOCK
+    # =========================
+
+    total_stock = sum(
+        product.stock_quantity
+        for product in products
+    )
+
+    return render(request, 'issue.html', {
+        'products': products,
+        'total_stock': total_stock
+    })
