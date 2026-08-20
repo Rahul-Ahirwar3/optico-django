@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Add Manufacturing Entry</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+</head>
+
+
+<body class="bg-light">
+
+
+<div class="container mt-5">
+
+
+    <!-- ==========================================
+         HEADER
+    =========================================== -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold mb-1">
+                Add Manufacturing Entry
+            </h2>
+
+            <p class="text-muted mb-0">
+                Add today's production details
+            </p>
+
+        </div>
+
+
+        <a
+            href="{% url 'inventory' %}"
+            class="btn btn-secondary"
+        >
+            ← Back to Inventory
+        </a>
+
+    </div>
+
+
+    <!-- ==========================================
+         PRODUCT INFORMATION
+    =========================================== -->
+
+    <div class="card shadow-sm border-0 mb-4">
+
+        <div class="card-body">
+
+            <h5 class="fw-bold mb-3">
+                Product Information
+            </h5>
+
+
+            <div class="row">
+
+
+                <div class="col-md-6">
+
+                    <p class="text-muted mb-1">
+                        Product
+                    </p>
+
+                    <h4>
+                        {{ product.name }}
+                    </h4>
+
+                </div>
+
+
+                <div class="col-md-3">
+
+                    <p class="text-muted mb-1">
+                        Available Stock
+                    </p>
+
+                    <h4 class="text-success">
+                        {{ product.available_stock }}
+                    </h4>
+
+                </div>
+
+
+                <div class="col-md-3">
+
+                    <p class="text-muted mb-1">
+                        Total Manufactured
+                    </p>
+
+                    <h4>
+                        {{ product.total_manufactured }}
+                    </h4>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ==========================================
+         ERROR MESSAGE
+    =========================================== -->
+
+    {% if error %}
+
+        <div
+            class="alert alert-danger"
+            role="alert"
+        >
+
+            {{ error }}
+
+        </div>
+
+    {% endif %}
+
+
+
+    <!-- ==========================================
+         MANUFACTURING FORM
+    =========================================== -->
+
+    <div class="card shadow-sm border-0">
+
+        <div class="card-body p-4">
+
+
+            <h5 class="fw-bold mb-4">
+                Manufacturing Details
+            </h5>
+
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+
+                <!-- ==================================
+                     DATE
+                =================================== -->
+
+                <div class="mb-3">
+
+                    <label
+                        for="date"
+                        class="form-label fw-semibold"
+                    >
+                        Manufacturing Date
+                    </label>
+
+
+                    <input
+                        type="date"
+                        name="date"
+                        id="date"
+                        class="form-control"
+                        required
+                    >
+
+                </div>
+
+
+
+                <!-- ==================================
+                     MANUFACTURED QUANTITY
+                =================================== -->
+
+                <div class="mb-4">
+
+                    <label
+                        for="quantity_manufactured"
+                        class="form-label fw-semibold"
+                    >
+                        Manufactured Quantity
+                    </label>
+
+
+                    <input
+                        type="number"
+                        name="quantity_manufactured"
+                        id="quantity_manufactured"
+                        class="form-control"
+                        min="1"
+                        placeholder="Enter manufactured quantity"
+                        required
+                    >
+
+                </div>
+
+
+
+                <!-- ==================================
+                     BUTTONS
+                =================================== -->
+
+                <div class="d-flex gap-2">
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary px-4"
+                    >
+                        Save Manufacturing Entry
+                    </button>
+
+
+                    <a
+                        href="{% url 'inventory' %}"
+                        class="btn btn-outline-secondary px-4"
+                    >
+                        Cancel
+                    </a>
+
+                </div>
+
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+    // Automatically set today's date
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            const dateInput =
+                document.getElementById("date");
+
+            if (dateInput && !dateInput.value) {
+
+                const today =
+                    new Date();
+
+                const year =
+                    today.getFullYear();
+
+                const month =
+                    String(
+                        today.getMonth() + 1
+                    ).padStart(2, "0");
+
+                const day =
+                    String(
+                        today.getDate()
+                    ).padStart(2, "0");
+
+                dateInput.value =
+                    `${year}-${month}-${day}`;
+            }
+
+        }
+    );
+
+</script>
+
+
+</body>
+
+</html>

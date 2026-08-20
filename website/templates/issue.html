@@ -5,8 +5,10 @@
 
     <meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Bulb Issue & Stock</title>
 
@@ -49,9 +51,10 @@
             margin: 40px auto;
         }
 
-        .stock-card {
+        .stock-card,
+        .form-card {
             background: white;
-            padding: 25px;
+            padding: 30px;
             border-radius: 12px;
             margin-bottom: 30px;
             box-shadow: 0 3px 12px rgba(0,0,0,0.08);
@@ -66,13 +69,6 @@
             font-size: 40px;
             font-weight: bold;
             color: #ff9800;
-        }
-
-        .form-card {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
         }
 
         .form-card h2 {
@@ -110,6 +106,42 @@
             border-color: #ff9800;
         }
 
+        .customer-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .customer-row select {
+            flex: 1;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 7px;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #e68900;
+        }
+
+        .create-btn {
+            width: auto;
+            padding: 12px 16px;
+            background: #198754;
+            white-space: nowrap;
+        }
+
+        .create-btn:hover {
+            background: #146c43;
+        }
+
         .amount-box {
             background: #f8f8f8;
             padding: 20px;
@@ -135,28 +167,66 @@
             font-weight: bold;
         }
 
-        button {
-            width: 100%;
-            padding: 14px;
-            background: #ff9800;
-            color: white;
-            border: none;
-            border-radius: 7px;
-            font-size: 17px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #e68900;
-        }
-
         .error {
             background: #ffe5e5;
             color: #d32f2f;
             padding: 15px;
             border-radius: 7px;
             margin-bottom: 20px;
+        }
+
+        .success {
+            background: #d1e7dd;
+            color: #0f5132;
+            padding: 15px;
+            border-radius: 7px;
+            margin-bottom: 20px;
+        }
+
+        /* MODAL */
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.55);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 450px;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.25);
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+        }
+
+        .save-btn {
+            background: #198754;
+        }
+
+        .cancel-btn {
+            background: #6c757d;
         }
 
         @media (max-width: 700px) {
@@ -173,19 +243,29 @@
                 width: 95%;
             }
 
+            .navbar a {
+                margin-left: 10px;
+                font-size: 14px;
+            }
+
+            .customer-row {
+                flex-direction: column;
+            }
+
+            .create-btn {
+                width: 100%;
+            }
+
         }
 
     </style>
 
 </head>
 
-
 <body>
 
 
-<!-- =========================
-     NAVBAR
-========================= -->
+<!-- NAVBAR -->
 
 <div class="navbar">
 
@@ -206,20 +286,16 @@
 </div>
 
 
-<!-- =========================
-     MAIN CONTAINER
-========================= -->
-
 <div class="container">
 
 
-    <!-- =========================
-         STOCK
-    ========================= -->
+    <!-- STOCK -->
 
     <div class="stock-card">
 
-        <h3>Total Available Stock</h3>
+        <h3>
+            Total Available Stock
+        </h3>
 
         <div class="stock-number">
             {{ total_stock }}
@@ -232,38 +308,49 @@
     </div>
 
 
-    <!-- =========================
-         ERROR MESSAGE
-    ========================= -->
+    <!-- MESSAGES -->
+
+    {% if messages %}
+
+        {% for message in messages %}
+
+            <div class="success">
+                {{ message }}
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
 
     {% if error %}
 
         <div class="error">
-
             {{ error }}
-
         </div>
 
     {% endif %}
 
 
-    <!-- =========================
-         ISSUE FORM
-    ========================= -->
+    <!-- ISSUE FORM -->
 
     <div class="form-card">
 
-        <h2>Issue Bulb</h2>
-
+        <h2>
+            Issue Bulb
+        </h2>
 
         <form method="POST">
 
             {% csrf_token %}
 
 
-            <!-- Product + Customer -->
+            <!-- PRODUCT + DISTRIBUTOR -->
 
             <div class="form-row">
+
+
+                <!-- PRODUCT -->
 
                 <div class="form-group">
 
@@ -286,12 +373,13 @@
                             <option
                                 value="{{ product.id }}"
                                 data-price="{{ product.price }}"
-                                data-stock="{{ product.stock_quantity }}"
+                                data-stock="{{ product.available_stock }}"
                             >
 
                                 {{ product.name }}
                                 -
-                                Stock: {{ product.stock_quantity }}
+                                Stock:
+                                {{ product.available_stock }}
 
                             </option>
 
@@ -302,27 +390,110 @@
                 </div>
 
 
+                <!-- DISTRIBUTOR -->
+
                 <div class="form-group">
 
                     <label>
-                        Customer Name
+                        Distributor
                     </label>
 
-                    <input
-                        type="text"
-                        name="customer_name"
-                        placeholder="Enter customer name"
-                        required
-                    >
+                    <div class="customer-row">
+
+                        <select
+                            name="distributor"
+                            id="distributor"
+                        >
+
+                            <option value="">
+                                Select Distributor
+                            </option>
+
+                            {% for distributor in distributors %}
+
+                                <option
+                                    value="{{ distributor.id }}"
+                                >
+
+                                    {{ distributor.name }}
+
+                                </option>
+
+                            {% empty %}
+
+                                <option value="">
+                                    No distributors available
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+
+                        <button
+                            type="button"
+                            class="create-btn"
+                            onclick="openDistributorModal()"
+                        >
+
+                            + Add Distributor
+
+                        </button>
+
+                    </div>
 
                 </div>
 
             </div>
 
 
-            <!-- Quantity + Date -->
+            <!-- CUSTOMER + QUANTITY -->
 
             <div class="form-row">
+
+
+                <!-- CUSTOMER -->
+
+                <div class="form-group">
+
+                    <label>
+                        Customer
+                    </label>
+
+                    <select
+                        name="customer"
+                        id="customer"
+                        required
+                    >
+
+                        <option value="">
+                            Select Customer
+                        </option>
+
+                        {% for customer in customers %}
+
+                            <option
+                                value="{{ customer.id }}"
+                            >
+
+                                {{ customer.name }}
+
+                            </option>
+
+                        {% empty %}
+
+                            <option value="">
+                                No customers available
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- QUANTITY -->
 
                 <div class="form-group">
 
@@ -341,6 +512,13 @@
 
                 </div>
 
+            </div>
+
+
+            <!-- DATE + RATE -->
+
+            <div class="form-row">
+
 
                 <div class="form-group">
 
@@ -351,17 +529,12 @@
                     <input
                         type="date"
                         name="issue_date"
+                        id="issue_date"
                         required
                     >
 
                 </div>
 
-            </div>
-
-
-            <!-- Rate + Payment -->
-
-            <div class="form-row">
 
                 <div class="form-group">
 
@@ -381,6 +554,12 @@
 
                 </div>
 
+            </div>
+
+
+            <!-- PAID -->
+
+            <div class="form-row">
 
                 <div class="form-group">
 
@@ -400,12 +579,12 @@
 
                 </div>
 
+                <div></div>
+
             </div>
 
 
-            <!-- =========================
-                 AMOUNT SUMMARY
-            ========================= -->
+            <!-- AMOUNT -->
 
             <div class="amount-box">
 
@@ -415,7 +594,10 @@
                         Total Amount
                     </span>
 
-                    <span id="total">
+                    <span
+                        id="total"
+                        class="total"
+                    >
                         ₹0.00
                     </span>
 
@@ -456,6 +638,78 @@
 
             </button>
 
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- ==================================================
+     ADD DISTRIBUTOR MODAL
+================================================== -->
+
+<div
+    id="distributorModal"
+    class="modal"
+>
+
+    <div class="modal-content">
+
+        <h2>
+            Add Distributor
+        </h2>
+
+        <form method="POST">
+
+            {% csrf_token %}
+
+            <input
+                type="hidden"
+                name="action"
+                value="create_distributor"
+            >
+
+            <div class="form-group">
+
+                <label>
+                    Distributor Name
+                </label>
+
+                <input
+                    type="text"
+                    name="new_distributor_name"
+                    id="new_distributor_name"
+                    placeholder="Enter distributor name"
+                    required
+                >
+
+            </div>
+
+
+            <div class="modal-buttons">
+
+                <button
+                    type="submit"
+                    class="save-btn"
+                >
+
+                    Save Distributor
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="cancel-btn"
+                    onclick="closeDistributorModal()"
+                >
+
+                    Cancel
+
+                </button>
+
+            </div>
 
         </form>
 
@@ -464,106 +718,246 @@
 </div>
 
 
-<!-- =========================
-     JAVASCRIPT
-========================= -->
-
 <script>
 
-    const product = document.getElementById("product");
+const product =
+    document.getElementById("product");
 
-    const quantity = document.getElementById("quantity");
+const quantity =
+    document.getElementById("quantity");
 
-    const rate = document.getElementById("rate");
+const rate =
+    document.getElementById("rate");
 
-    const paid = document.getElementById("paid_amount");
+const paid =
+    document.getElementById("paid_amount");
 
-    const total = document.getElementById("total");
+const total =
+    document.getElementById("total");
 
-    const paidDisplay = document.getElementById("paid");
+const paidDisplay =
+    document.getElementById("paid");
 
-    const due = document.getElementById("due");
-
-
-    function calculateAmount() {
-
-        let qty = Number(quantity.value) || 0;
-
-        let price = Number(rate.value) || 0;
-
-        let paidAmount = Number(paid.value) || 0;
-
-        let totalAmount = qty * price;
-
-        let dueAmount = totalAmount - paidAmount;
+const due =
+    document.getElementById("due");
 
 
-        if (dueAmount < 0) {
+/* =========================================
+   CALCULATE AMOUNT
+========================================= */
 
-            dueAmount = 0;
+function calculateAmount() {
 
-        }
+    const qty =
+        Number(quantity.value) || 0;
 
+    const price =
+        Number(rate.value) || 0;
 
-        total.innerText =
-            "₹" + totalAmount.toFixed(2);
+    const paidAmount =
+        Number(paid.value) || 0;
 
-        paidDisplay.innerText =
-            "₹" + paidAmount.toFixed(2);
+    const totalAmount =
+        qty * price;
 
-        due.innerText =
-            "₹" + dueAmount.toFixed(2);
+    let dueAmount =
+        totalAmount - paidAmount;
 
+    if (dueAmount < 0) {
+        dueAmount = 0;
     }
 
+    total.innerText =
+        "₹" + totalAmount.toFixed(2);
 
-    product.addEventListener(
-        "change",
-        function () {
+    paidDisplay.innerText =
+        "₹" + paidAmount.toFixed(2);
 
-            const selected =
-                product.options[
-                    product.selectedIndex
-                ];
-
-            const price =
-                selected.getAttribute(
-                    "data-price"
-                );
+    due.innerText =
+        "₹" + dueAmount.toFixed(2);
+}
 
 
-            if (price) {
+/* =========================================
+   PRODUCT CHANGE
+========================================= */
 
-                rate.value = price;
+product.addEventListener(
+    "change",
+    function () {
 
-            }
+        const selected =
+            product.options[
+                product.selectedIndex
+            ];
 
+        const price =
+            selected.getAttribute(
+                "data-price"
+            );
 
-            calculateAmount();
+        if (price) {
+
+            rate.value = price;
+
+        } else {
+
+            rate.value = "";
 
         }
+
+        calculateAmount();
+
+    }
+);
+
+
+quantity.addEventListener(
+    "input",
+    calculateAmount
+);
+
+rate.addEventListener(
+    "input",
+    calculateAmount
+);
+
+paid.addEventListener(
+    "input",
+    calculateAmount
+);
+
+
+/* =========================================
+   DEFAULT DATE
+========================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const dateInput =
+            document.getElementById(
+                "issue_date"
+            );
+
+        if (
+            dateInput &&
+            !dateInput.value
+        ) {
+
+            const today =
+                new Date();
+
+            const year =
+                today.getFullYear();
+
+            const month =
+                String(
+                    today.getMonth() + 1
+                ).padStart(2, "0");
+
+            const day =
+                String(
+                    today.getDate()
+                ).padStart(2, "0");
+
+            dateInput.value =
+                `${year}-${month}-${day}`;
+
+        }
+
+    }
+);
+
+
+/* =========================================
+   OPEN DISTRIBUTOR MODAL
+========================================= */
+
+function openDistributorModal() {
+
+    const modal =
+        document.getElementById(
+            "distributorModal"
+        );
+
+    modal.style.display =
+        "flex";
+
+    setTimeout(
+        function () {
+
+            document
+                .getElementById(
+                    "new_distributor_name"
+                )
+                .focus();
+
+        },
+        100
     );
+}
 
 
-    quantity.addEventListener(
-        "input",
-        calculateAmount
-    );
+/* =========================================
+   CLOSE DISTRIBUTOR MODAL
+========================================= */
+
+function closeDistributorModal() {
+
+    document.getElementById(
+        "distributorModal"
+    ).style.display =
+        "none";
+}
 
 
-    rate.addEventListener(
-        "input",
-        calculateAmount
-    );
+/* =========================================
+   OUTSIDE CLICK
+========================================= */
+
+window.addEventListener(
+    "click",
+    function (event) {
+
+        const modal =
+            document.getElementById(
+                "distributorModal"
+            );
+
+        if (
+            event.target === modal
+        ) {
+
+            closeDistributorModal();
+
+        }
+
+    }
+);
 
 
-    paid.addEventListener(
-        "input",
-        calculateAmount
-    );
+/* =========================================
+   ESC
+========================================= */
+
+document.addEventListener(
+    "keydown",
+    function (event) {
+
+        if (
+            event.key === "Escape"
+        ) {
+
+            closeDistributorModal();
+
+        }
+
+    }
+);
 
 </script>
-
 
 </body>
 

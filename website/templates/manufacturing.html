@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Manufacturing History</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+</head>
+
+
+<body class="bg-light">
+
+
+<div class="container mt-5">
+
+
+    <!-- ==========================================
+         HEADER
+    =========================================== -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold mb-1">
+                Manufacturing History
+            </h2>
+
+            <p class="text-muted mb-0">
+                Date-wise production and stock records
+            </p>
+
+        </div>
+
+
+        <a
+            href="{% url 'inventory' %}"
+            class="btn btn-dark"
+        >
+            ← Inventory
+        </a>
+
+    </div>
+
+
+    <!-- ==========================================
+         TOTAL MANUFACTURED
+    =========================================== -->
+
+    <div class="row mb-4">
+
+        <div class="col-md-4">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-body">
+
+                    <p class="text-muted mb-1">
+                        Total Manufactured
+                    </p>
+
+                    <h2 class="fw-bold">
+                        {{ total_manufactured }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================
+         MANUFACTURING TABLE
+    =========================================== -->
+
+    <div class="card shadow-sm border-0">
+
+        <div class="card-body p-4">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+
+                <div>
+
+                    <h4 class="fw-bold mb-1">
+                        Production Records
+                    </h4>
+
+                    <p class="text-muted mb-0">
+                        All manufacturing entries
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+
+                    <thead class="table-dark">
+
+                        <tr>
+
+                            <th>
+                                Date
+                            </th>
+
+                            <th>
+                                Product
+                            </th>
+
+                            <th>
+                                Workers
+                            </th>
+
+                            <th>
+                                Quantity
+                            </th>
+
+                            <th>
+                                Total Stock
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+
+                        {% for item in manufacturing_records %}
+
+                        <tr>
+
+
+                            <!-- DATE -->
+
+                            <td>
+
+                                {{ item.date|date:"d M Y" }}
+
+                            </td>
+
+
+                            <!-- PRODUCT -->
+
+                            <td>
+
+                                <strong>
+                                    {{ item.product.name }}
+                                </strong>
+
+                            </td>
+
+
+                            <!-- WORKERS -->
+
+                            <td>
+
+                                <span class="badge bg-secondary fs-6">
+
+                                    {{ item.workers }}
+
+                                </span>
+
+                            </td>
+
+
+                            <!-- QUANTITY -->
+
+                            <td>
+
+                                <span class="badge bg-primary fs-6">
+
+                                    {{ item.quantity_manufactured }}
+
+                                </span>
+
+                            </td>
+
+
+                            <!-- TOTAL STOCK -->
+
+                            <td>
+
+                                <strong class="text-success">
+
+                                    {{ item.total_stock }}
+
+                                </strong>
+
+                            </td>
+
+
+                        </tr>
+
+
+                        {% empty %}
+
+                        <tr>
+
+                            <td
+                                colspan="5"
+                                class="text-center py-5"
+                            >
+
+                                <h5 class="text-muted">
+                                    No manufacturing records found.
+                                </h5>
+
+                                <p class="text-muted mb-0">
+                                    Add your first manufacturing entry
+                                    from the Inventory page.
+                                </p>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+</script>
+
+
+</body>
+
+</html>

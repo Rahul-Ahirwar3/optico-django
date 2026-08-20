@@ -1,0 +1,227 @@
+{% extends "admin/change_list.html" %}
+
+{% block search %}
+
+    {{ block.super }}
+
+    <div style="
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 10px 0 15px 0;
+        flex-wrap: wrap;
+    ">
+
+        <!-- EXISTING DISTRIBUTOR -->
+
+        <select
+            id="distributor-filter"
+            style="
+                height: 36px;
+                min-width: 210px;
+                padding: 0 10px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                background: white;
+            "
+        >
+
+            <option value="">
+                Existing Distributor
+            </option>
+
+            {% for distributor in distributors %}
+
+                <option
+                    value="{{ distributor.id }}"
+                >
+                    {{ distributor.name }}
+                </option>
+
+            {% endfor %}
+
+        </select>
+
+
+        <!-- ADD DISTRIBUTOR -->
+
+        <a
+            href="{% url 'admin:website_customer_add' %}"
+            class="button"
+            style="
+                height: 36px;
+                line-height: 36px;
+                padding: 0 12px;
+            "
+        >
+            + Add Distributor
+        </a>
+
+
+        <!-- BULB -->
+
+        <select
+            id="bulb-filter"
+            style="
+                height: 36px;
+                min-width: 130px;
+                padding: 0 10px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                background: white;
+            "
+        >
+
+            <option value="">
+                All Bulbs
+            </option>
+
+            <option value="9">
+                9W
+            </option>
+
+            <option value="12">
+                12W
+            </option>
+
+            <option value="15">
+                15W
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <script>
+
+        function openDistributor() {
+
+            const distributor =
+                document.getElementById(
+                    'distributor-filter'
+                ).value;
+
+            const bulb =
+                document.getElementById(
+                    'bulb-filter'
+                ).value;
+
+
+            /*
+             * Distributor select nahi kiya
+             */
+
+            if (!distributor) {
+
+                return;
+
+            }
+
+
+            /*
+             * Distributor detail URL
+             */
+
+            let url =
+                "{% url 'distributor_detail' 0 %}";
+
+            url =
+                url.replace(
+                    '/0/',
+                    '/' + distributor + '/'
+                );
+
+
+            /*
+             * Bulb select kiya hai
+             */
+
+            if (bulb) {
+
+                url +=
+                    '?bulb=' + bulb;
+
+            }
+
+
+            window.location.href = url;
+
+        }
+
+
+        /*
+         * Distributor change
+         */
+
+        document
+            .getElementById(
+                'distributor-filter'
+            )
+            .addEventListener(
+                'change',
+                openDistributor
+            );
+
+
+        /*
+         * Bulb change
+         *
+         * Agar distributor selected hai
+         * to distributor detail page par
+         * selected bulb ke saath jayega.
+         */
+
+        document
+            .getElementById(
+                'bulb-filter'
+            )
+            .addEventListener(
+                'change',
+                function () {
+
+                    const distributor =
+                        document.getElementById(
+                            'distributor-filter'
+                        ).value;
+
+                    const bulb =
+                        document.getElementById(
+                            'bulb-filter'
+                        ).value;
+
+
+                    if (!distributor) {
+
+                        return;
+
+                    }
+
+
+                    let url =
+                        "{% url 'distributor_detail' 0 %}";
+
+                    url =
+                        url.replace(
+                            '/0/',
+                            '/' + distributor + '/'
+                        );
+
+
+                    if (bulb) {
+
+                        url +=
+                            '?bulb=' + bulb;
+
+                    }
+
+
+                    window.location.href =
+                        url;
+
+                }
+            );
+
+    </script>
+
+{% endblock %}

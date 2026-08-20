@@ -1,0 +1,105 @@
+<div class="actions">
+
+    <label>
+        Action:
+    </label>
+
+    <select
+        name="action"
+        required
+    >
+
+        <option value="">
+            ---------
+        </option>
+
+        <option value="delete_selected">
+            Delete selected issues
+        </option>
+
+    </select>
+
+
+    <label style="margin-left:15px;">
+        Distributor:
+    </label>
+
+    <select
+        name="distributor"
+        id="distributor-filter"
+    >
+
+        <option value="">
+            All Distributors
+        </option>
+
+        {% for distributor in distributors %}
+
+            <option value="{{ distributor.id }}">
+
+                {{ distributor.name }}
+
+            </option>
+
+        {% endfor %}
+
+    </select>
+
+
+    <a
+        href="{{ create_distributor_url }}"
+        class="button"
+        style="
+            margin-left:5px;
+            text-decoration:none;
+        "
+    >
+        + Create Distributor
+    </a>
+
+
+    <label style="margin-left:15px;">
+        Bulb:
+    </label>
+
+
+    <select
+        name="bulb"
+        id="bulb-filter"
+    >
+
+        <option value="">
+            All Bulbs
+        </option>
+
+        {% for bulb in bulbs %}
+
+            <option value="{{ bulb.id }}">
+
+                {{ bulb.name }}
+
+            </option>
+
+        {% endfor %}
+
+    </select>
+
+
+    <input
+        type="submit"
+        value="Run"
+        class="button"
+    >
+
+
+    {% if cl.result_count %}
+
+        <span class="action-counter">
+
+            0 of {{ cl.result_count }} selected
+
+        </span>
+
+    {% endif %}
+
+</div>

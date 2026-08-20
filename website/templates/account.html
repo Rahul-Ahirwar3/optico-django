@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Accounts</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <style>
+
+        body {
+            background: #f5f6f8;
+        }
+
+        .account-card {
+            border: 0;
+            border-radius: 14px;
+        }
+
+        .customer-link {
+            text-decoration: none;
+            color: #212529;
+        }
+
+        .customer-link:hover {
+            color: #0d6efd;
+        }
+
+        .summary-card {
+            border-radius: 12px;
+            border: 0;
+        }
+
+        .amount {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .customer-row {
+            cursor: pointer;
+        }
+
+        .customer-row:hover {
+            background: #f8f9fa;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="container mt-5 mb-5">
+
+
+    <!-- ================================================== -->
+    <!-- HEADER -->
+    <!-- ================================================== -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold mb-1">
+                Accounts
+            </h2>
+
+            <p class="text-muted mb-0">
+                Distributor account and payment details
+            </p>
+
+        </div>
+
+
+        <a
+            href="{% url 'issue_bulb' %}"
+            class="btn btn-dark"
+        >
+            ← Issue
+        </a>
+
+    </div>
+
+
+    <!-- ================================================== -->
+    <!-- DISTRIBUTOR DROPDOWN -->
+    <!-- ================================================== -->
+
+    <div class="card shadow-sm account-card mb-4">
+
+        <div class="card-body p-4">
+
+            <h5 class="fw-bold mb-3">
+                Select Distributor
+            </h5>
+
+
+            <form
+                method="GET"
+                action="{% url 'account' %}"
+            >
+
+                <div class="row g-3">
+
+
+                    <!-- DISTRIBUTOR -->
+
+                    <div class="col-md-6">
+
+                        <select
+                            name="customer"
+                            class="form-select form-select-lg"
+                            onchange="this.form.submit()"
+                        >
+
+                            <option value="">
+                                All Distributors
+                            </option>
+
+
+                            {% for customer in customers %}
+
+                            <option
+                                value="{{ customer.id }}"
+                                {% if selected_customer and selected_customer.id == customer.id %}
+                                    selected
+                                {% endif %}
+                            >
+
+                                {{ customer.name }}
+
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- BULB -->
+
+                    {% if selected_customer %}
+
+                    <div class="col-md-6">
+
+                        <select
+                            name="bulb"
+                            class="form-select form-select-lg"
+                            onchange="this.form.submit()"
+                        >
+
+                            <option value="">
+                                All Bulbs
+                            </option>
+
+
+                            {% for bulb in bulbs %}
+
+                            <option
+                                value="{{ bulb.id }}"
+                                {% if selected_bulb == bulb.id|stringformat:"s" %}
+                                    selected
+                                {% endif %}
+                            >
+
+                                {{ bulb.name }}
+
+                                {% if bulb.watt %}
+                                    - {{ bulb.watt }}W
+                                {% endif %}
+
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                    {% endif %}
+
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================== -->
+    <!-- ALL DISTRIBUTORS -->
+    <!-- ================================================== -->
+
+    {% if not selected_customer %}
+
+    <div class="card shadow-sm account-card">
+
+        <div class="card-body p-4">
+
+            <h4 class="fw-bold mb-1">
+                Distributors
+            </h4>
+
+            <p class="text-muted mb-4">
+                Click on a distributor to view complete account details.
+            </p>
+
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+
+                    <thead class="table-dark">
+
+                        <tr>
+
+                            <th>
+                                Distributor
+                            </th>
+
+                            <th>
+                                Phone
+                            </th>
+
+                            <th>
+                                Address
+                            </th>
+
+                            <th>
+                                View
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+
+                        {% for customer in customers %}
+
+                        <tr class="customer-row">
+
+
+                            <td>
+
+                                <a
+                                    href="{% url 'account' %}?customer={{ customer.id }}"
+                                    class="customer-link fw-bold"
+                                >
+
+                                    {{ customer.name }}
+
+                                </a>
+
+                            </td>
+
+
+                            <td>
+
+                                {% if customer.phone %}
+
+                                    {{ customer.phone }}
+
+                                {% else %}
+
+                                    -
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+
+                                {% if customer.address %}
+
+                                    {{ customer.address }}
+
+                                {% else %}
+
+                                    -
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+
+                                <a
+                                    href="{% url 'account' %}?customer={{ customer.id }}"
+                                    class="btn btn-sm btn-primary"
+                                >
+
+                                    View Account
+
+                                </a>
+
+                            </td>
+
+
+                        </tr>
+
+                        {% empty %}
+
+
+                        <tr>
+
+                            <td
+                                colspan="4"
+                                class="text-center py-5"
+                            >
+
+                                <h5 class="text-muted">
+                                    No distributors found.
+                                </h5>
+
+                            </td>
+
+                        </tr>
+
+
+                        {% endfor %}
+
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ================================================== -->
+    <!-- SELECTED DISTRIBUTOR -->
+    <!-- ================================================== -->
+
+    {% if selected_customer %}
+
+
+    <!-- CUSTOMER HEADER -->
+
+    <div class="card shadow-sm account-card mb-4">
+
+        <div class="card-body p-4">
+
+
+            <div class="d-flex justify-content-between align-items-center">
+
+
+                <div>
+
+                    <h3 class="fw-bold mb-1">
+
+                        {{ selected_customer.name }}
+
+                    </h3>
+
+
+                    <p class="text-muted mb-0">
+
+                        {% if selected_customer.phone %}
+
+                            📞 {{ selected_customer.phone }}
+
+                        {% endif %}
+
+
+                        {% if selected_customer.address %}
+
+                            &nbsp; | &nbsp;
+
+                            📍 {{ selected_customer.address }}
+
+                        {% endif %}
+
+                    </p>
+
+                </div>
+
+
+                <a
+                    href="{% url 'account' %}"
+                    class="btn btn-outline-secondary"
+                >
+
+                    ← All Distributors
+
+                </a>
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================== -->
+    <!-- AMOUNT SUMMARY -->
+    <!-- ================================================== -->
+
+    <div class="row g-4 mb-4">
+
+
+        <!-- TOTAL AMOUNT -->
+
+        <div class="col-md-4">
+
+            <div class="card shadow-sm summary-card">
+
+                <div class="card-body">
+
+                    <p class="text-muted mb-1">
+                        Total Amount
+                    </p>
+
+                    <div class="amount">
+
+                        ₹{{ total_amount|floatformat:2 }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- PAID -->
+
+        <div class="col-md-4">
+
+            <div class="card shadow-sm summary-card">
+
+                <div class="card-body">
+
+                    <p class="text-muted mb-1">
+                        Paid Amount
+                    </p>
+
+                    <div class="amount text-success">
+
+                        ₹{{ paid_amount|floatformat:2 }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- DUE -->
+
+        <div class="col-md-4">
+
+            <div class="card shadow-sm summary-card">
+
+                <div class="card-body">
+
+                    <p class="text-muted mb-1">
+                        Due Amount
+                    </p>
+
+                    <div class="amount text-danger">
+
+                        ₹{{ due_amount|floatformat:2 }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- ================================================== -->
+    <!-- BULB DETAILS -->
+    <!-- ================================================== -->
+
+    <div class="card shadow-sm account-card">
+
+        <div class="card-body p-4">
+
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+
+                <div>
+
+                    <h4 class="fw-bold mb-1">
+                        Bulb Details
+                    </h4>
+
+                    <p class="text-muted mb-0">
+
+                        {% if selected_bulb %}
+
+                            Showing selected bulb details.
+
+                        {% else %}
+
+                            Showing all bulb details.
+
+                        {% endif %}
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+
+                    <thead class="table-dark">
+
+                        <tr>
+
+                            <th>
+                                Date
+                            </th>
+
+                            <th>
+                                Bulb
+                            </th>
+
+                            <th>
+                                Watt
+                            </th>
+
+                            <th>
+                                Quantity
+                            </th>
+
+                            <th>
+                                Rate
+                            </th>
+
+                            <th>
+                                Total Amount
+                            </th>
+
+                            <th>
+                                Paid
+                            </th>
+
+                            <th>
+                                Due
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+
+                        {% for issue in issues %}
+
+                        <tr>
+
+
+                            <td>
+
+                                {{ issue.issue_date|date:"d M Y" }}
+
+                            </td>
+
+
+                            <td>
+
+                                <strong>
+
+                                    {{ issue.product.name }}
+
+                                </strong>
+
+                            </td>
+
+
+                            <td>
+
+                                {{ issue.product.watt }}W
+
+                            </td>
+
+
+                            <td>
+
+                                <span class="badge bg-primary">
+
+                                    {{ issue.quantity }}
+
+                                </span>
+
+                            </td>
+
+
+                            <td>
+
+                                ₹{{ issue.rate|floatformat:2 }}
+
+                            </td>
+
+
+                            <td>
+
+                                <strong>
+
+                                    ₹{{ issue.total_amount|floatformat:2 }}
+
+                                </strong>
+
+                            </td>
+
+
+                            <td>
+
+                                <span class="text-success fw-semibold">
+
+                                    ₹{{ issue.paid_amount|floatformat:2 }}
+
+                                </span>
+
+                            </td>
+
+
+                            <td>
+
+                                {% if issue.due_amount > 0 %}
+
+                                    <span class="text-danger fw-bold">
+
+                                        ₹{{ issue.due_amount|floatformat:2 }}
+
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="text-success fw-bold">
+
+                                        ₹0.00
+
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                        </tr>
+
+                        {% empty %}
+
+
+                        <tr>
+
+                            <td
+                                colspan="8"
+                                class="text-center py-5"
+                            >
+
+                                <h5 class="text-muted mb-2">
+
+                                    No bulb records found.
+
+                                </h5>
+
+                                <p class="text-muted mb-0">
+
+                                    This distributor has no issue/sale records yet.
+
+                                </p>
+
+                            </td>
+
+                        </tr>
+
+
+                        {% endfor %}
+
+
+                    </tbody>
+
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    {% endif %}
+
+
+</div>
+
+
+</body>
+
+</html>

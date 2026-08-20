@@ -1,0 +1,352 @@
+{% extends "admin/change_list.html" %}
+
+{% block object-tools %}
+    
+    {{ block.super }}
+
+{% endblock %}
+
+
+{% block search %}
+
+    {{ block.super }}
+
+    <div
+        style="
+            margin-top:15px;
+            padding:15px;
+            background:#ffffff;
+            border:1px solid #ddd;
+            border-radius:6px;
+            display:flex;
+            align-items:center;
+            gap:10px;
+            flex-wrap:wrap;
+        "
+    >
+
+        <!-- ============================= -->
+        <!-- DISTRIBUTOR -->
+        <!-- ============================= -->
+
+        <label
+            for="distributor-select"
+            style="
+                font-weight:600;
+                margin:0;
+            "
+        >
+            Distributor:
+        </label>
+
+
+        <select
+            id="distributor-select"
+            style="
+                min-width:180px;
+                padding:7px 10px;
+                border:1px solid #ccc;
+                border-radius:4px;
+            "
+        >
+
+            <option value="">
+                All Distributors
+            </option>
+
+
+            {% for distributor in distributors %}
+
+                <option value="{{ distributor.id }}">
+
+                    {{ distributor.name }}
+
+                </option>
+
+            {% endfor %}
+
+        </select>
+
+
+        <!-- ============================= -->
+        <!-- CREATE DISTRIBUTOR -->
+        <!-- ============================= -->
+
+        <a
+            href="{{ create_distributor_url }}"
+            style="
+                display:inline-block;
+                padding:7px 12px;
+                background:#198754;
+                color:white;
+                text-decoration:none;
+                border-radius:4px;
+                font-weight:600;
+            "
+        >
+
+            + Create Distributor
+
+        </a>
+
+
+        <!-- ============================= -->
+        <!-- BULB -->
+        <!-- ============================= -->
+
+        <label
+            for="bulb-select"
+            style="
+                font-weight:600;
+                margin-left:15px;
+                margin-bottom:0;
+            "
+        >
+            Bulb:
+        </label>
+
+
+        <select
+            id="bulb-select"
+            style="
+                min-width:180px;
+                padding:7px 10px;
+                border:1px solid #ccc;
+                border-radius:4px;
+            "
+        >
+
+            <option value="">
+                All Bulbs
+            </option>
+
+
+            {% for bulb in bulbs %}
+
+                <option value="{{ bulb.id }}">
+
+                    {{ bulb.name }}
+
+                </option>
+
+            {% endfor %}
+
+        </select>
+
+
+        <!-- ============================= -->
+        <!-- FILTER BUTTON -->
+        <!-- ============================= -->
+
+        <button
+            type="button"
+            id="apply-filters"
+            style="
+                padding:7px 15px;
+                background:#0d6efd;
+                color:white;
+                border:none;
+                border-radius:4px;
+                cursor:pointer;
+                font-weight:600;
+            "
+        >
+
+            Filter
+
+        </button>
+
+
+        <!-- ============================= -->
+        <!-- CLEAR -->
+        <!-- ============================= -->
+
+        <button
+            type="button"
+            id="clear-filters"
+            style="
+                padding:7px 15px;
+                background:#6c757d;
+                color:white;
+                border:none;
+                border-radius:4px;
+                cursor:pointer;
+                font-weight:600;
+            "
+        >
+
+            Clear
+
+        </button>
+
+    </div>
+
+
+    <script>
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                const distributor =
+                    document.getElementById(
+                        "distributor-select"
+                    );
+
+                const bulb =
+                    document.getElementById(
+                        "bulb-select"
+                    );
+
+                const apply =
+                    document.getElementById(
+                        "apply-filters"
+                    );
+
+                const clear =
+                    document.getElementById(
+                        "clear-filters"
+                    );
+
+
+                // ==========================================
+                // APPLY FILTER
+                // ==========================================
+
+                apply.addEventListener(
+                    "click",
+                    function () {
+
+                        const params =
+                            new URLSearchParams(
+                                window.location.search
+                            );
+
+
+                        // Remove old filters
+
+                        params.delete(
+                            "customer__id__exact"
+                        );
+
+                        params.delete(
+                            "product__id__exact"
+                        );
+
+
+                        // Distributor
+
+                        if (
+                            distributor.value
+                        ) {
+
+                            params.set(
+                                "customer__id__exact",
+                                distributor.value
+                            );
+
+                        }
+
+
+                        // Bulb
+
+                        if (
+                            bulb.value
+                        ) {
+
+                            params.set(
+                                "product__id__exact",
+                                bulb.value
+                            );
+
+                        }
+
+
+                        window.location.href =
+                            window.location.pathname
+                            + "?"
+                            + params.toString();
+
+                    }
+                );
+
+
+                // ==========================================
+                // CLEAR FILTER
+                // ==========================================
+
+                clear.addEventListener(
+                    "click",
+                    function () {
+
+                        const params =
+                            new URLSearchParams(
+                                window.location.search
+                            );
+
+
+                        params.delete(
+                            "customer__id__exact"
+                        );
+
+                        params.delete(
+                            "product__id__exact"
+                        );
+
+
+                        window.location.href =
+                            window.location.pathname
+                            + "?"
+                            + params.toString();
+
+                    }
+                );
+
+
+                // ==========================================
+                // KEEP SELECTED DISTRIBUTOR
+                // ==========================================
+
+                const urlParams =
+                    new URLSearchParams(
+                        window.location.search
+                    );
+
+
+                const selectedDistributor =
+                    urlParams.get(
+                        "customer__id__exact"
+                    );
+
+
+                const selectedBulb =
+                    urlParams.get(
+                        "product__id__exact"
+                    );
+
+
+                if (
+                    selectedDistributor
+                ) {
+
+                    distributor.value =
+                        selectedDistributor;
+
+                }
+
+
+                if (
+                    selectedBulb
+                ) {
+
+                    bulb.value =
+                        selectedBulb;
+
+                }
+
+            }
+        );
+
+    </script>
+
+{% endblock %}

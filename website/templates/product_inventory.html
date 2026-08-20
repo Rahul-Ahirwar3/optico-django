@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        {{ product.name }} - Inventory
+    </title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+</head>
+
+
+<body class="bg-light">
+
+
+<div class="container mt-5 mb-5">
+
+
+    <!-- =========================================
+         HEADER
+    ========================================== -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold mb-1">
+
+                {{ product.name }}
+
+            </h2>
+
+            <p class="text-muted mb-0">
+
+                Product Inventory & Manufacturing
+
+            </p>
+
+        </div>
+
+
+        <a
+            href="{% url 'inventory' %}"
+            class="btn btn-secondary"
+        >
+
+            ← Inventory
+
+        </a>
+
+    </div>
+
+
+    <!-- =========================================
+         MESSAGES
+    ========================================== -->
+
+    {% if messages %}
+
+        {% for message in messages %}
+
+            <div class="alert alert-success">
+
+                {{ message }}
+
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+
+    {% if error %}
+
+        <div class="alert alert-danger">
+
+            {{ error }}
+
+        </div>
+
+    {% endif %}
+
+
+    <!-- =========================================
+         PRODUCT SUMMARY
+    ========================================== -->
+
+    <div class="row g-4 mb-4">
+
+
+        <!-- PRODUCT -->
+
+        <div class="col-md-4">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-body">
+
+                    <p class="text-muted mb-1">
+
+                        Product
+
+                    </p>
+
+                    <h4 class="fw-bold">
+
+                        {{ product.name }}
+
+                    </h4>
+
+                    {% if product.watt %}
+
+                        <p class="text-muted mb-0">
+
+                            {{ product.watt }} Watt
+
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- MANUFACTURED -->
+
+        <div class="col-md-4">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-body">
+
+                    <p class="text-muted mb-1">
+
+                        Total Manufactured
+
+                    </p>
+
+                    <h3 class="fw-bold">
+
+                        {{ total_manufactured }}
+
+                    </h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- AVAILABLE -->
+
+        <div class="col-md-4">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-body">
+
+                    <p class="text-muted mb-1">
+
+                        Available Stock
+
+                    </p>
+
+                    <h3 class="fw-bold text-success">
+
+                        {{ available_stock }}
+
+                    </h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================
+         MANUFACTURING ENTRY
+    ========================================== -->
+
+    <div class="card shadow-sm border-0 mb-4">
+
+        <div class="card-body p-4">
+
+
+            <h4 class="fw-bold mb-1">
+
+                Manufacturing Entry
+
+            </h4>
+
+
+            <p class="text-muted mb-4">
+
+                Add today's manufacturing details
+
+            </p>
+
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+
+                <div class="row g-3">
+
+
+                    <!-- DATE -->
+
+                    <div class="col-md-4">
+
+                        <label
+                            class="form-label fw-semibold"
+                        >
+
+                            Manufacturing Date
+
+                        </label>
+
+
+                        <input
+                            type="date"
+                            name="date"
+                            class="form-control"
+                            id="date"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- WORKERS -->
+
+                    <div class="col-md-4">
+
+                        <label
+                            class="form-label fw-semibold"
+                        >
+
+                            Number of Workers
+
+                        </label>
+
+
+                        <input
+                            type="number"
+                            name="workers"
+                            class="form-control"
+                            value="1"
+                            min="1"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- QUANTITY -->
+
+                    <div class="col-md-4">
+
+                        <label
+                            class="form-label fw-semibold"
+                        >
+
+                            Manufactured Today
+
+                        </label>
+
+
+                        <input
+                            type="number"
+                            name="quantity_manufactured"
+                            class="form-control"
+                            min="1"
+                            placeholder="Enter quantity"
+                            required
+                        >
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="mt-4">
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary px-4"
+                    >
+
+                        Save Entry
+
+                    </button>
+
+                </div>
+
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================
+         MANUFACTURING HISTORY
+    ========================================== -->
+
+    <div class="card shadow-sm border-0">
+
+        <div class="card-body p-4">
+
+
+            <h4 class="fw-bold mb-1">
+
+                Manufacturing History
+
+            </h4>
+
+
+            <p class="text-muted mb-4">
+
+                Date-wise manufacturing records
+
+            </p>
+
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+
+                    <thead class="table-dark">
+
+                        <tr>
+
+                            <th>
+                                Date
+                            </th>
+
+                            <th>
+                                Workers
+                            </th>
+
+                            <th>
+                                Manufactured
+                            </th>
+
+                            <th>
+                                Total Stock
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+
+                        {% for item in manufacturing_records %}
+
+
+                        <tr>
+
+
+                            <td>
+
+                                {{ item.date|date:"d M Y" }}
+
+                            </td>
+
+
+                            <td>
+
+                                {{ item.workers }}
+
+                            </td>
+
+
+                            <td>
+
+                                <span
+                                    class="badge bg-primary fs-6"
+                                >
+
+                                    {{ item.quantity_manufactured }}
+
+                                </span>
+
+                            </td>
+
+
+                            <td>
+
+                                <strong class="text-success">
+
+                                    {{ item.total_stock }}
+
+                                </strong>
+
+                            </td>
+
+
+                        </tr>
+
+
+                        {% empty %}
+
+
+                        <tr>
+
+                            <td
+                                colspan="4"
+                                class="text-center py-5"
+                            >
+
+                                <p class="text-muted mb-0">
+
+                                    No manufacturing entries yet.
+
+                                </p>
+
+                            </td>
+
+                        </tr>
+
+
+                        {% endfor %}
+
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<!-- =========================================
+     DEFAULT DATE
+========================================== -->
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const dateInput =
+            document.getElementById("date");
+
+        if (dateInput) {
+
+            const today =
+                new Date();
+
+            const year =
+                today.getFullYear();
+
+            const month =
+                String(
+                    today.getMonth() + 1
+                ).padStart(2, "0");
+
+            const day =
+                String(
+                    today.getDate()
+                ).padStart(2, "0");
+
+            dateInput.value =
+                `${year}-${month}-${day}`;
+
+        }
+
+    }
+);
+
+</script>
+
+
+</body>
+
+</html>
