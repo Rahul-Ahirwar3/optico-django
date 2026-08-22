@@ -655,8 +655,11 @@ class AccountAdmin(admin.ModelAdmin):
                 product__name__icontains=search
             )
 
-            # PRODUCT WATT
-            # Example: 12 / 12w / 12 W
+            # WATT SEARCH
+            # Supports:
+            # 9
+            # 9w
+            # 9 W
 
             watt_search = (
                 search
@@ -823,6 +826,7 @@ class AccountAdmin(admin.ModelAdmin):
 
         # ==================================================
         # PAYMENT HISTORY
+        # WATT COLUMN REMOVED
         # ==================================================
 
         payments = (
@@ -864,14 +868,6 @@ class AccountAdmin(admin.ModelAdmin):
                     <td style="
                         padding:9px;
                         border:1px solid #ddd;
-                        text-align:center;
-                    ">
-                        {}W
-                    </td>
-
-                    <td style="
-                        padding:9px;
-                        border:1px solid #ddd;
                     ">
                         ₹{}
                     </td>
@@ -901,8 +897,6 @@ class AccountAdmin(admin.ModelAdmin):
 
                         payment.issue.product.name,
 
-                        payment.issue.product.watt,
-
                         payment.amount,
 
                         payment.payment_method,
@@ -921,7 +915,7 @@ class AccountAdmin(admin.ModelAdmin):
                 <tr>
 
                     <td
-                        colspan="6"
+                        colspan="5"
                         style="
                             padding:20px;
                             text-align:center;
@@ -977,10 +971,6 @@ class AccountAdmin(admin.ModelAdmin):
 
         # ==================================================
         # SEARCH BAR
-        #
-        # IMPORTANT:
-        # Yahan <form> bilkul nahi hai.
-        # JavaScript URL ko directly change karega.
         # ==================================================
 
         search_bar = format_html(
@@ -1065,7 +1055,6 @@ class AccountAdmin(admin.ModelAdmin):
                                 'account-history-clear-btn'
                             );
 
-
                         if (
                             !input ||
                             !searchButton ||
@@ -1073,11 +1062,6 @@ class AccountAdmin(admin.ModelAdmin):
                         ) {{
                             return;
                         }}
-
-
-                        // =====================================
-                        // SEARCH BUTTON
-                        // =====================================
 
                         searchButton.onclick = function(e) {{
 
@@ -1091,7 +1075,6 @@ class AccountAdmin(admin.ModelAdmin):
                                 new URL(
                                     window.location.href
                                 );
-
 
                             if (value) {{
 
@@ -1108,10 +1091,6 @@ class AccountAdmin(admin.ModelAdmin):
 
                             }}
 
-
-                            // IMPORTANT:
-                            // Same Account change page.
-
                             window.location.href =
                                 url.pathname +
                                 (
@@ -1120,13 +1099,7 @@ class AccountAdmin(admin.ModelAdmin):
                                           url.searchParams.toString()
                                         : ''
                                 );
-
                         }};
-
-
-                        // =====================================
-                        // ENTER KEY
-                        // =====================================
 
                         input.onkeydown = function(e) {{
 
@@ -1136,15 +1109,8 @@ class AccountAdmin(admin.ModelAdmin):
                                 e.stopPropagation();
 
                                 searchButton.click();
-
                             }}
-
                         }};
-
-
-                        // =====================================
-                        // CLEAR
-                        // =====================================
 
                         clearButton.onclick = function(e) {{
 
@@ -1160,7 +1126,6 @@ class AccountAdmin(admin.ModelAdmin):
                                 'history_search'
                             );
 
-
                             window.location.href =
                                 url.pathname +
                                 (
@@ -1169,11 +1134,9 @@ class AccountAdmin(admin.ModelAdmin):
                                           url.searchParams.toString()
                                         : ''
                                 );
-
                         }};
 
                     }}
-
 
                     if (
                         document.readyState === 'loading'
@@ -1193,7 +1156,6 @@ class AccountAdmin(admin.ModelAdmin):
                 }})();
             </script>
             ''',
-
             search,
         )
 
@@ -1220,7 +1182,6 @@ class AccountAdmin(admin.ModelAdmin):
         else:
 
             search_status = ''
-
 
         # ==================================================
         # FINAL HTML
@@ -1267,7 +1228,6 @@ class AccountAdmin(admin.ModelAdmin):
 
                     </div>
 
-
                     <div style="
                         background:#f5f5f5;
                         border:1px solid #ddd;
@@ -1292,7 +1252,6 @@ class AccountAdmin(admin.ModelAdmin):
 
                     </div>
 
-
                     <div style="
                         background:#eaf8ea;
                         border:1px solid #c5e6c5;
@@ -1316,7 +1275,6 @@ class AccountAdmin(admin.ModelAdmin):
                         </div>
 
                     </div>
-
 
                     <div style="
                         background:#fff4e5;
@@ -1475,7 +1433,7 @@ class AccountAdmin(admin.ModelAdmin):
 
                     <table style="
                         width:100%;
-                        min-width:700px;
+                        min-width:600px;
                         border-collapse:collapse;
                         background:white;
                     ">
@@ -1499,13 +1457,6 @@ class AccountAdmin(admin.ModelAdmin):
                                     border:1px solid #ddd;
                                 ">
                                     Product
-                                </th>
-
-                                <th style="
-                                    padding:10px;
-                                    border:1px solid #ddd;
-                                ">
-                                    Watt
                                 </th>
 
                                 <th style="
@@ -1550,7 +1501,6 @@ class AccountAdmin(admin.ModelAdmin):
             due_amount,
 
             search_bar,
-
             search_status,
 
             purchase_html,
