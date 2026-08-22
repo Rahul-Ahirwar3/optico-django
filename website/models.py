@@ -713,6 +713,10 @@ def customer_account_created(
 # AUTO CREATE ACCOUNT FOR CUSTOMER
 # ==================================================
 
+# ==================================================
+# AUTOMATIC ACCOUNT CREATION
+# ==================================================
+
 @receiver(
     post_save,
     sender=Customer
@@ -725,7 +729,6 @@ def customer_account_created(
 ):
 
     if created:
-
         Account.objects.get_or_create(
             customer=instance
         )

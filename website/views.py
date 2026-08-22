@@ -161,7 +161,6 @@ def contact(request):
             })
 
         except Exception:
-
             pass
 
         return render(
@@ -692,7 +691,7 @@ def issue_bulb(request):
         )
 
         # ==================================================
-        # SAVE ISSUE
+        # SAVE ISSUE + UPDATE STOCK
         # ==================================================
 
         with transaction.atomic():
@@ -715,6 +714,19 @@ def issue_bulb(request):
 
                 due_amount=due_amount
 
+            )
+
+            # ------------------------------------------
+            # IMPORTANT:
+            # ISSUE KE BAAD AVAILABLE STOCK KAM HOGA
+            # ------------------------------------------
+
+            product.available_stock -= quantity
+
+            product.save(
+                update_fields=[
+                    'available_stock'
+                ]
             )
 
         messages.success(
@@ -868,10 +880,14 @@ def net_quantity_view(request):
         if (
             net_record.total_manufactured
             != manufactured
+
             or
+
             net_record.total_issued
             != issued
+
             or
+
             net_record.net_quantity
             != product_net_quantity
         ):
@@ -942,10 +958,7 @@ def net_quantity_view(request):
 # PRODUCT INVENTORY DETAIL
 # ==================================================
 
-def product_inventory(
-    request,
-    product_id
-):
+def product_inventory(request, product_id):
 
     try:
 
@@ -1005,6 +1018,12 @@ def product_inventory(
                     'manufacturing_records':
                         manufacturing_records,
 
+                    'total_manufactured':
+                        product.total_manufactured,
+
+                    'available_stock':
+                        product.available_stock,
+
                     'error':
                         'Please select a date.'
                 }
@@ -1047,6 +1066,12 @@ def product_inventory(
                     'manufacturing_records':
                         manufacturing_records,
 
+                    'total_manufactured':
+                        product.total_manufactured,
+
+                    'available_stock':
+                        product.available_stock,
+
                     'error':
                         'Number of workers must be a valid number.'
                 }
@@ -1075,6 +1100,12 @@ def product_inventory(
 
                     'manufacturing_records':
                         manufacturing_records,
+
+                    'total_manufactured':
+                        product.total_manufactured,
+
+                    'available_stock':
+                        product.available_stock,
 
                     'error':
                         'Number of workers must be greater than 0.'
@@ -1118,6 +1149,12 @@ def product_inventory(
                     'manufacturing_records':
                         manufacturing_records,
 
+                    'total_manufactured':
+                        product.total_manufactured,
+
+                    'available_stock':
+                        product.available_stock,
+
                     'error':
                         'Manufactured quantity must be a valid number.'
                 }
@@ -1147,6 +1184,12 @@ def product_inventory(
                     'manufacturing_records':
                         manufacturing_records,
 
+                    'total_manufactured':
+                        product.total_manufactured,
+
+                    'available_stock':
+                        product.available_stock,
+
                     'error':
                         'Manufactured quantity must be greater than 0.'
                 }
@@ -1166,6 +1209,21 @@ def product_inventory(
 
             quantity_manufactured=quantity
 
+        )
+
+        # ==================================================
+        # UPDATE PRODUCT STOCK
+        # ==================================================
+
+        product.total_manufactured += quantity
+
+        product.available_stock += quantity
+
+        product.save(
+            update_fields=[
+                'total_manufactured',
+                'available_stock'
+            ]
         )
 
         messages.success(
@@ -1194,6 +1252,22 @@ def product_inventory(
         )
     )
 
+    # ==================================================
+    # SUMMARY
+    # ==================================================
+
+    total_manufactured = (
+        product.total_manufactured
+    )
+
+    available_stock = (
+        product.available_stock
+    )
+
+    # ==================================================
+    # RENDER
+    # ==================================================
+
     return render(
         request,
         'product_inventory.html',
@@ -1203,6 +1277,12 @@ def product_inventory(
 
             'manufacturing_records':
                 manufacturing_records,
+
+            'total_manufactured':
+                total_manufactured,
+
+            'available_stock':
+                available_stock,
         }
     )
 
@@ -1533,10 +1613,6 @@ def account(request):
         or Decimal('0')
     )
 
-    # ==================================================
-    # ACCOUNT PAGE
-    # ==================================================
-
     return render(
         request,
         'account.html',
@@ -1566,8 +1642,10 @@ def account(request):
                 due_amount,
         }
     )
+
+
 # ==================================================
-# ACCOUNT PAGE
+# ACCOUNT PAGE - NEW VERSION
 # ==================================================
 
 def account_view(request):
@@ -1587,13 +1665,16 @@ def account_view(request):
     )
 
     selected_customer = None
+
     selected_product = None
+
     issues = Issue.objects.none()
 
     total_amount = Decimal('0')
-    paid_amount = Decimal('0')
-    due_amount = Decimal('0')
 
+    paid_amount = Decimal('0')
+
+    due_amount = Decimal('0')
 
     # ==================================================
     # CUSTOMER SELECTED
@@ -1603,14 +1684,15 @@ def account_view(request):
 
         try:
 
-            selected_customer = Customer.objects.get(
-                id=selected_customer_id
+            selected_customer = (
+                Customer.objects.get(
+                    id=selected_customer_id
+                )
             )
 
         except Customer.DoesNotExist:
 
             selected_customer = None
-
 
     # ==================================================
     # CUSTOMER + BULB DATA
@@ -1632,7 +1714,6 @@ def account_view(request):
             )
         )
 
-
         # ==================================================
         # BULB SELECTED
         # ==================================================
@@ -1641,8 +1722,10 @@ def account_view(request):
 
             try:
 
-                selected_product = Product.objects.get(
-                    id=selected_product_id
+                selected_product = (
+                    Product.objects.get(
+                        id=selected_product_id
+                    )
                 )
 
                 issues = issues.filter(
@@ -1652,7 +1735,6 @@ def account_view(request):
             except Product.DoesNotExist:
 
                 selected_product = None
-
 
         # ==================================================
         # TOTAL AMOUNT
@@ -1667,7 +1749,6 @@ def account_view(request):
             or Decimal('0')
         )
 
-
         # ==================================================
         # PAID AMOUNT
         # ==================================================
@@ -1680,7 +1761,6 @@ def account_view(request):
             )['total']
             or Decimal('0')
         )
-
 
         # ==================================================
         # DUE AMOUNT
@@ -1695,7 +1775,6 @@ def account_view(request):
             or Decimal('0')
         )
 
-
     # ==================================================
     # PRODUCTS FOR BULB DROPDOWN
     # ==================================================
@@ -1705,7 +1784,6 @@ def account_view(request):
         .all()
         .order_by('watt')
     )
-
 
     # ==================================================
     # RENDER

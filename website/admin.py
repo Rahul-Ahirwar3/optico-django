@@ -1,7 +1,9 @@
 from django.contrib import admin
 from django.shortcuts import redirect
 from django.urls import reverse
-from django.utils.html import format_html
+from django.utils.html import format_html, format_html_join, mark_safe
+from django.db.models import Sum, Q
+from datetime import datetime
 
 from .models import (
     Contact,
@@ -46,7 +48,7 @@ class ContactAdmin(admin.ModelAdmin):
 
 
 # ==================================================
-# CUSTOMER / DISTRIBUTOR
+# CUSTOMER
 # ==================================================
 
 @admin.register(Customer)
@@ -77,7 +79,6 @@ class CustomerAdmin(admin.ModelAdmin):
 class ManufacturingInline(admin.TabularInline):
 
     model = Manufacturing
-
     extra = 1
 
     fields = (
@@ -104,7 +105,6 @@ class ManufacturingInline(admin.TabularInline):
 class IssueInline(admin.TabularInline):
 
     model = Issue
-
     extra = 0
 
     fields = (
@@ -264,25 +264,13 @@ class InventoryAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         return False
 
-    def has_delete_permission(
-        self,
-        request,
-        obj=None
-    ):
+    def has_delete_permission(self, request, obj=None):
         return False
 
-    def has_change_permission(
-        self,
-        request,
-        obj=None
-    ):
+    def has_change_permission(self, request, obj=None):
         return False
 
-    def changelist_view(
-        self,
-        request,
-        extra_context=None
-    ):
+    def changelist_view(self, request, extra_context=None):
         return redirect('/inventory/')
 
 
@@ -357,58 +345,6 @@ class IssueAdmin(admin.ModelAdmin):
         ),
 
     )
-
-    def get_queryset(self, request):
-
-        queryset = super().get_queryset(request)
-
-        distributor = request.GET.get('distributor')
-        bulb = request.GET.get('bulb')
-
-        if distributor:
-            queryset = queryset.filter(
-                customer_id=distributor
-            )
-
-        if bulb:
-            queryset = queryset.filter(
-                product__watt=bulb
-            )
-
-        return queryset
-
-    def changelist_view(
-        self,
-        request,
-        extra_context=None
-    ):
-
-        extra_context = extra_context or {}
-
-        extra_context['distributors'] = (
-            Customer.objects
-            .all()
-            .order_by('name')
-        )
-
-        extra_context['selected_distributor'] = (
-            request.GET.get(
-                'distributor',
-                ''
-            )
-        )
-
-        extra_context['selected_bulb'] = (
-            request.GET.get(
-                'bulb',
-                ''
-            )
-        )
-
-        return super().changelist_view(
-            request,
-            extra_context=extra_context
-        )
 
 
 # ==================================================
@@ -489,11 +425,7 @@ class NetQuantityAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         return False
 
-    def has_delete_permission(
-        self,
-        request,
-        obj=None
-    ):
+    def has_delete_permission(self, request, obj=None):
         return False
 
 
@@ -544,6 +476,7 @@ class AccountAdmin(admin.ModelAdmin):
 
     list_display = (
         'customer_name',
+        'total_quantity_display',
         'total_amount_display',
         'paid_amount_display',
         'due_amount_display',
@@ -563,22 +496,37 @@ class AccountAdmin(admin.ModelAdmin):
     )
 
     readonly_fields = (
-        'customer',
-        'total_amount_display',
-        'paid_amount_display',
-        'due_amount_display',
+        'account_history',
     )
 
     fields = (
-        'customer',
-        'total_amount_display',
-        'paid_amount_display',
-        'due_amount_display',
+        'account_history',
     )
 
-    # ------------------------------------------
-    # DISTRIBUTOR NAME
-    # ------------------------------------------
+    # ==================================================
+    # CHANGE VIEW
+    # ==================================================
+
+    def change_view(
+        self,
+        request,
+        object_id,
+        form_url='',
+        extra_context=None
+    ):
+
+        self._account_request = request
+
+        return super().change_view(
+            request,
+            object_id,
+            form_url,
+            extra_context
+        )
+
+    # ==================================================
+    # CUSTOMER NAME
+    # ==================================================
 
     @admin.display(
         description='Distributor',
@@ -591,9 +539,28 @@ class AccountAdmin(admin.ModelAdmin):
 
         return '-'
 
-    # ------------------------------------------
+    # ==================================================
+    # TOTAL BULBS
+    # ==================================================
+
+    @admin.display(
+        description='Total Bulbs'
+    )
+    def total_quantity_display(self, obj):
+
+        return (
+            Issue.objects
+            .filter(
+                customer=obj.customer
+            )
+            .aggregate(
+                total=Sum('quantity')
+            )['total'] or 0
+        )
+
+    # ==================================================
     # TOTAL AMOUNT
-    # ------------------------------------------
+    # ==================================================
 
     @admin.display(
         description='Total Amount'
@@ -602,9 +569,9 @@ class AccountAdmin(admin.ModelAdmin):
 
         return f"₹{obj.total_amount}"
 
-    # ------------------------------------------
+    # ==================================================
     # PAID AMOUNT
-    # ------------------------------------------
+    # ==================================================
 
     @admin.display(
         description='Paid Amount'
@@ -613,9 +580,9 @@ class AccountAdmin(admin.ModelAdmin):
 
         return f"₹{obj.paid_amount}"
 
-    # ------------------------------------------
+    # ==================================================
     # DUE AMOUNT
-    # ------------------------------------------
+    # ==================================================
 
     @admin.display(
         description='Due Amount'
@@ -624,34 +591,998 @@ class AccountAdmin(admin.ModelAdmin):
 
         return f"₹{obj.due_amount}"
 
-    # ------------------------------------------
-    # ACCOUNT AUTOMATIC
-    # ------------------------------------------
+    # ==================================================
+    # ACCOUNT HISTORY
+    # ==================================================
+
+    @admin.display(
+        description=''
+    )
+    def account_history(self, obj):
+
+        request = getattr(
+            self,
+            '_account_request',
+            None
+        )
+
+        # ==================================================
+        # SEARCH VALUE
+        # ==================================================
+
+        search = ''
+
+        if request:
+
+            search = (
+                request.GET
+                .get(
+                    'history_search',
+                    ''
+                )
+                .strip()
+            )
+
+        # ==================================================
+        # PURCHASE HISTORY
+        # ==================================================
+
+        issues = (
+            Issue.objects
+            .filter(
+                customer=obj.customer
+            )
+            .select_related(
+                'product'
+            )
+            .order_by(
+                '-issue_date',
+                '-id'
+            )
+        )
+
+        # ==================================================
+        # SEARCH FILTER
+        # ==================================================
+
+        if search:
+
+            search_query = Q()
+
+            # PRODUCT NAME
+
+            search_query |= Q(
+                product__name__icontains=search
+            )
+
+            # PRODUCT WATT
+            # Example: 12 / 12w / 12 W
+
+            watt_search = (
+                search
+                .lower()
+                .replace('w', '')
+                .replace(' ', '')
+                .strip()
+            )
+
+            if watt_search.isdigit():
+
+                search_query |= Q(
+                    product__watt=int(
+                        watt_search
+                    )
+                )
+
+            # DATE SEARCH
+
+            searched_date = None
+
+            date_formats = (
+                '%d-%m-%Y',
+                '%d/%m/%Y',
+                '%Y-%m-%d',
+            )
+
+            for date_format in date_formats:
+
+                try:
+
+                    searched_date = (
+                        datetime.strptime(
+                            search,
+                            date_format
+                        ).date()
+                    )
+
+                    break
+
+                except ValueError:
+                    pass
+
+            if searched_date:
+
+                search_query |= Q(
+                    issue_date=searched_date
+                )
+
+            issues = issues.filter(
+                search_query
+            )
+
+        # ==================================================
+        # PURCHASE HISTORY HTML
+        # NO WATT COLUMN
+        # ==================================================
+
+        if issues.exists():
+
+            purchase_html = format_html_join(
+                '',
+                '''
+                <tr>
+
+                    <td style="
+                        padding:9px;
+                        border:1px solid #ddd;
+                        white-space:nowrap;
+                    ">
+                        {}
+                    </td>
+
+                    <td style="
+                        padding:9px;
+                        border:1px solid #ddd;
+                    ">
+                        {}
+                    </td>
+
+                    <td style="
+                        padding:9px;
+                        border:1px solid #ddd;
+                        text-align:center;
+                    ">
+                        {}
+                    </td>
+
+                    <td style="
+                        padding:9px;
+                        border:1px solid #ddd;
+                    ">
+                        ₹{}
+                    </td>
+
+                    <td style="
+                        padding:9px;
+                        border:1px solid #ddd;
+                    ">
+                        ₹{}
+                    </td>
+
+                    <td style="
+                        padding:9px;
+                        border:1px solid #ddd;
+                    ">
+                        ₹{}
+                    </td>
+
+                    <td style="
+                        padding:9px;
+                        border:1px solid #ddd;
+                    ">
+                        ₹{}
+                    </td>
+
+                </tr>
+                ''',
+
+                (
+                    (
+                        issue.issue_date.strftime(
+                            '%d-%m-%Y'
+                        ),
+
+                        issue.product.name,
+
+                        issue.quantity,
+
+                        issue.rate,
+
+                        issue.total_amount,
+
+                        issue.paid_amount,
+
+                        issue.due_amount,
+                    )
+
+                    for issue in issues
+                )
+            )
+
+        else:
+
+            purchase_html = mark_safe(
+                '''
+                <tr>
+
+                    <td
+                        colspan="7"
+                        style="
+                            padding:20px;
+                            text-align:center;
+                            border:1px solid #ddd;
+                            color:#777;
+                        "
+                    >
+                        No purchase history found.
+                    </td>
+
+                </tr>
+                '''
+            )
+
+        # ==================================================
+        # PAYMENT HISTORY
+        # ==================================================
+
+        payments = (
+            Payment.objects
+            .filter(
+                issue__customer=obj.customer
+            )
+            .select_related(
+                'issue',
+                'issue__product'
+            )
+            .order_by(
+                '-payment_date',
+                '-id'
+            )
+        )
+
+        if payments.exists():
+
+            payment_html = format_html_join(
+                '',
+                '''
+                <tr>
+
+                    <td style="
+                        padding:9px;
+                        border:1px solid #ddd;
+                    ">
+                        {}
+                    </td>
+
+                    <td style="
+                        padding:9px;
+                        border:1px solid #ddd;
+                    ">
+                        {}
+                    </td>
+
+                    <td style="
+                        padding:9px;
+                        border:1px solid #ddd;
+                        text-align:center;
+                    ">
+                        {}W
+                    </td>
+
+                    <td style="
+                        padding:9px;
+                        border:1px solid #ddd;
+                    ">
+                        ₹{}
+                    </td>
+
+                    <td style="
+                        padding:9px;
+                        border:1px solid #ddd;
+                    ">
+                        {}
+                    </td>
+
+                    <td style="
+                        padding:9px;
+                        border:1px solid #ddd;
+                    ">
+                        {}
+                    </td>
+
+                </tr>
+                ''',
+
+                (
+                    (
+                        payment.payment_date.strftime(
+                            '%d-%m-%Y'
+                        ),
+
+                        payment.issue.product.name,
+
+                        payment.issue.product.watt,
+
+                        payment.amount,
+
+                        payment.payment_method,
+
+                        payment.note or '-',
+                    )
+
+                    for payment in payments
+                )
+            )
+
+        else:
+
+            payment_html = mark_safe(
+                '''
+                <tr>
+
+                    <td
+                        colspan="6"
+                        style="
+                            padding:20px;
+                            text-align:center;
+                            border:1px solid #ddd;
+                            color:#777;
+                        "
+                    >
+                        No payment history found.
+                    </td>
+
+                </tr>
+                '''
+            )
+
+        # ==================================================
+        # ACCOUNT SUMMARY
+        # ==================================================
+
+        all_issues = (
+            Issue.objects
+            .filter(
+                customer=obj.customer
+            )
+        )
+
+        total_quantity = (
+            all_issues
+            .aggregate(
+                total=Sum('quantity')
+            )['total'] or 0
+        )
+
+        total_amount = (
+            all_issues
+            .aggregate(
+                total=Sum('total_amount')
+            )['total'] or 0
+        )
+
+        paid_amount = (
+            all_issues
+            .aggregate(
+                total=Sum('paid_amount')
+            )['total'] or 0
+        )
+
+        due_amount = (
+            all_issues
+            .aggregate(
+                total=Sum('due_amount')
+            )['total'] or 0
+        )
+
+        # ==================================================
+        # SEARCH BAR
+        #
+        # IMPORTANT:
+        # Yahan <form> bilkul nahi hai.
+        # JavaScript URL ko directly change karega.
+        # ==================================================
+
+        search_bar = format_html(
+            '''
+            <div style="
+                display:flex;
+                align-items:center;
+                gap:5px;
+                margin:0;
+            ">
+
+                <input
+                    id="account-history-search"
+                    type="text"
+                    value="{}"
+                    placeholder="Date / Product..."
+                    autocomplete="off"
+                    style="
+                        width:190px;
+                        height:34px;
+                        padding:5px 9px;
+                        border:1px solid #aaa;
+                        border-radius:4px;
+                        font-size:13px;
+                        box-sizing:border-box;
+                    "
+                >
+
+                <button
+                    type="button"
+                    id="account-history-search-btn"
+                    style="
+                        height:34px;
+                        padding:0 12px;
+                        border:0;
+                        border-radius:4px;
+                        background:#417690;
+                        color:white;
+                        font-size:13px;
+                        cursor:pointer;
+                    "
+                >
+                    Search
+                </button>
+
+                <button
+                    type="button"
+                    id="account-history-clear-btn"
+                    style="
+                        height:34px;
+                        padding:0 11px;
+                        border:0;
+                        border-radius:4px;
+                        background:#777;
+                        color:white;
+                        font-size:13px;
+                        cursor:pointer;
+                    "
+                >
+                    Clear
+                </button>
+
+            </div>
+
+            <script>
+                (function() {{
+
+                    function initAccountHistorySearch() {{
+
+                        const input =
+                            document.getElementById(
+                                'account-history-search'
+                            );
+
+                        const searchButton =
+                            document.getElementById(
+                                'account-history-search-btn'
+                            );
+
+                        const clearButton =
+                            document.getElementById(
+                                'account-history-clear-btn'
+                            );
+
+
+                        if (
+                            !input ||
+                            !searchButton ||
+                            !clearButton
+                        ) {{
+                            return;
+                        }}
+
+
+                        // =====================================
+                        // SEARCH BUTTON
+                        // =====================================
+
+                        searchButton.onclick = function(e) {{
+
+                            e.preventDefault();
+                            e.stopPropagation();
+
+                            const value =
+                                input.value.trim();
+
+                            const url =
+                                new URL(
+                                    window.location.href
+                                );
+
+
+                            if (value) {{
+
+                                url.searchParams.set(
+                                    'history_search',
+                                    value
+                                );
+
+                            }} else {{
+
+                                url.searchParams.delete(
+                                    'history_search'
+                                );
+
+                            }}
+
+
+                            // IMPORTANT:
+                            // Same Account change page.
+
+                            window.location.href =
+                                url.pathname +
+                                (
+                                    url.searchParams.toString()
+                                        ? '?' +
+                                          url.searchParams.toString()
+                                        : ''
+                                );
+
+                        }};
+
+
+                        // =====================================
+                        // ENTER KEY
+                        // =====================================
+
+                        input.onkeydown = function(e) {{
+
+                            if (e.key === 'Enter') {{
+
+                                e.preventDefault();
+                                e.stopPropagation();
+
+                                searchButton.click();
+
+                            }}
+
+                        }};
+
+
+                        // =====================================
+                        // CLEAR
+                        // =====================================
+
+                        clearButton.onclick = function(e) {{
+
+                            e.preventDefault();
+                            e.stopPropagation();
+
+                            const url =
+                                new URL(
+                                    window.location.href
+                                );
+
+                            url.searchParams.delete(
+                                'history_search'
+                            );
+
+
+                            window.location.href =
+                                url.pathname +
+                                (
+                                    url.searchParams.toString()
+                                        ? '?' +
+                                          url.searchParams.toString()
+                                        : ''
+                                );
+
+                        }};
+
+                    }}
+
+
+                    if (
+                        document.readyState === 'loading'
+                    ) {{
+
+                        document.addEventListener(
+                            'DOMContentLoaded',
+                            initAccountHistorySearch
+                        );
+
+                    }} else {{
+
+                        initAccountHistorySearch();
+
+                    }}
+
+                }})();
+            </script>
+            ''',
+
+            search,
+        )
+
+        # ==================================================
+        # SEARCH STATUS
+        # ==================================================
+
+        if search:
+
+            search_status = format_html(
+                '''
+                <div style="
+                    margin:0 0 12px 0;
+                    color:#666;
+                    font-size:13px;
+                ">
+                    Showing results for:
+                    <strong>{}</strong>
+                </div>
+                ''',
+                search
+            )
+
+        else:
+
+            search_status = ''
+
+
+        # ==================================================
+        # FINAL HTML
+        # ==================================================
+
+        return format_html(
+            '''
+            <div style="
+                width:100%;
+                margin:0;
+                padding:0;
+            ">
+
+                <!-- SUMMARY -->
+
+                <div style="
+                    display:flex;
+                    gap:10px;
+                    flex-wrap:wrap;
+                    margin-bottom:25px;
+                ">
+
+                    <div style="
+                        background:#e8f4ff;
+                        border:1px solid #b8dfff;
+                        border-radius:5px;
+                        padding:11px 16px;
+                        min-width:135px;
+                    ">
+
+                        <div style="
+                            font-size:12px;
+                            color:#666;
+                        ">
+                            Total Bulbs
+                        </div>
+
+                        <div style="
+                            font-size:20px;
+                            font-weight:bold;
+                        ">
+                            {}
+                        </div>
+
+                    </div>
+
+
+                    <div style="
+                        background:#f5f5f5;
+                        border:1px solid #ddd;
+                        border-radius:5px;
+                        padding:11px 16px;
+                        min-width:135px;
+                    ">
+
+                        <div style="
+                            font-size:12px;
+                            color:#666;
+                        ">
+                            Total Amount
+                        </div>
+
+                        <div style="
+                            font-size:20px;
+                            font-weight:bold;
+                        ">
+                            ₹{}
+                        </div>
+
+                    </div>
+
+
+                    <div style="
+                        background:#eaf8ea;
+                        border:1px solid #c5e6c5;
+                        border-radius:5px;
+                        padding:11px 16px;
+                        min-width:135px;
+                    ">
+
+                        <div style="
+                            font-size:12px;
+                            color:#666;
+                        ">
+                            Paid Amount
+                        </div>
+
+                        <div style="
+                            font-size:20px;
+                            font-weight:bold;
+                        ">
+                            ₹{}
+                        </div>
+
+                    </div>
+
+
+                    <div style="
+                        background:#fff4e5;
+                        border:1px solid #ffd9a3;
+                        border-radius:5px;
+                        padding:11px 16px;
+                        min-width:135px;
+                    ">
+
+                        <div style="
+                            font-size:12px;
+                            color:#666;
+                        ">
+                            Due Amount
+                        </div>
+
+                        <div style="
+                            font-size:20px;
+                            font-weight:bold;
+                        ">
+                            ₹{}
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- PURCHASE HISTORY HEADER -->
+
+                <div style="
+                    display:flex;
+                    align-items:center;
+                    justify-content:space-between;
+                    gap:12px;
+                    margin-bottom:12px;
+                ">
+
+                    <h2 style="
+                        margin:0;
+                        font-size:20px;
+                        font-weight:normal;
+                    ">
+                        Purchase History
+                    </h2>
+
+                    {}
+
+                </div>
+
+
+                {}
+
+
+                <!-- PURCHASE HISTORY -->
+
+                <div style="
+                    overflow-x:auto;
+                    margin-bottom:30px;
+                ">
+
+                    <table style="
+                        width:100%;
+                        min-width:750px;
+                        border-collapse:collapse;
+                        background:white;
+                    ">
+
+                        <thead>
+
+                            <tr style="
+                                background:#79aec8;
+                                color:white;
+                            ">
+
+                                <th style="
+                                    padding:10px;
+                                    border:1px solid #ddd;
+                                ">
+                                    Date
+                                </th>
+
+                                <th style="
+                                    padding:10px;
+                                    border:1px solid #ddd;
+                                ">
+                                    Product
+                                </th>
+
+                                <th style="
+                                    padding:10px;
+                                    border:1px solid #ddd;
+                                ">
+                                    Quantity
+                                </th>
+
+                                <th style="
+                                    padding:10px;
+                                    border:1px solid #ddd;
+                                ">
+                                    Rate
+                                </th>
+
+                                <th style="
+                                    padding:10px;
+                                    border:1px solid #ddd;
+                                ">
+                                    Total
+                                </th>
+
+                                <th style="
+                                    padding:10px;
+                                    border:1px solid #ddd;
+                                ">
+                                    Paid
+                                </th>
+
+                                <th style="
+                                    padding:10px;
+                                    border:1px solid #ddd;
+                                ">
+                                    Due
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+                            {}
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                <!-- PAYMENT HISTORY -->
+
+                <h2 style="
+                    background:#417690;
+                    color:white;
+                    padding:10px 13px;
+                    margin:0 0 12px 0;
+                    font-size:18px;
+                    font-weight:normal;
+                    border-radius:4px;
+                ">
+                    Payment History
+                </h2>
+
+
+                <div style="
+                    overflow-x:auto;
+                ">
+
+                    <table style="
+                        width:100%;
+                        min-width:700px;
+                        border-collapse:collapse;
+                        background:white;
+                    ">
+
+                        <thead>
+
+                            <tr style="
+                                background:#79aec8;
+                                color:white;
+                            ">
+
+                                <th style="
+                                    padding:10px;
+                                    border:1px solid #ddd;
+                                ">
+                                    Payment Date
+                                </th>
+
+                                <th style="
+                                    padding:10px;
+                                    border:1px solid #ddd;
+                                ">
+                                    Product
+                                </th>
+
+                                <th style="
+                                    padding:10px;
+                                    border:1px solid #ddd;
+                                ">
+                                    Watt
+                                </th>
+
+                                <th style="
+                                    padding:10px;
+                                    border:1px solid #ddd;
+                                ">
+                                    Amount
+                                </th>
+
+                                <th style="
+                                    padding:10px;
+                                    border:1px solid #ddd;
+                                ">
+                                    Method
+                                </th>
+
+                                <th style="
+                                    padding:10px;
+                                    border:1px solid #ddd;
+                                ">
+                                    Note
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+                            {}
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+            ''',
+
+            total_quantity,
+            total_amount,
+            paid_amount,
+            due_amount,
+
+            search_bar,
+
+            search_status,
+
+            purchase_html,
+
+            payment_html,
+        )
+
+    # ==================================================
+    # ADD DISABLED
+    # ==================================================
 
     def has_add_permission(self, request):
-
         return False
 
-    # ------------------------------------------
-    # DELETE DISABLE
-    # ------------------------------------------
+    # ==================================================
+    # DELETE DISABLED
+    # ==================================================
 
     def has_delete_permission(
         self,
         request,
         obj=None
     ):
-
         return False
 
-    # ------------------------------------------
-    # CHANGE DISABLE
-    # ------------------------------------------
+    # ==================================================
+    # CHANGE ENABLED
+    # ==================================================
 
     def has_change_permission(
         self,
         request,
         obj=None
     ):
-
         return True
